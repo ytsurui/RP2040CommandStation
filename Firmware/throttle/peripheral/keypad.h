@@ -25,6 +25,7 @@ public:
 
 private:
     static uint8_t counter;
+    static uint8_t counter2;
     static uint32_t readData;
     static uint8_t scanCode;
     static uint8_t scanFlag;

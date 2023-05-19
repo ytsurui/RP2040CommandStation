@@ -24,6 +24,7 @@ uint8_t keypadScanFlag;
 */
 
 uint8_t keypad::counter;
+uint8_t keypad::counter2;
 uint32_t keypad::readData;
 uint8_t keypad::scanCode;
 uint8_t keypad::scanFlag;
@@ -49,6 +50,11 @@ void keypad::event(void)
     uint8_t gpioStat = 0;
     uint8_t newKeyCode;
 
+    counter2++;
+    if (counter2 < 8)
+        return;
+    counter2 = 0;
+
     counter++;
     if (counter >= 8)
     {
@@ -58,7 +64,7 @@ void keypad::event(void)
     if (~counter & 0x01)
     {
         // Set Port
-        //gpio_put_masked(KEY_ROW_PORT_MASK, 0);
+        // gpio_put_masked(KEY_ROW_PORT_MASK, 0);
         gpio_clr_mask(KEY_ROW_PORT_MASK);
 
         switch (counter & 0x06)

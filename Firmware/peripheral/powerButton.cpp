@@ -3,21 +3,21 @@
 #include "powerButton.h"
 
 #define POWER_BUTTON_PORT 25
-#define POWER_BUTTON_COUNTER_THRESHOLD 5
-#define POWER_BUTTON_COUNTER_MAX 7
+#define POWER_BUTTON_COUNTER_THRESHOLD 2
+#define POWER_BUTTON_COUNTER_MAX 4
 
 uint8_t powerbutton::counter = 0;
 
-//void initPowerButton(void)
+// void initPowerButton(void)
 void powerbutton::init()
 {
     gpio_init(POWER_BUTTON_PORT);
     gpio_pull_up(POWER_BUTTON_PORT);
-    //counter = POWER_BUTTON_COUNTER_MAX;
+    // counter = POWER_BUTTON_COUNTER_MAX;
     counter = 0;
 }
 
-//void eventPowerButton(void)
+// void eventPowerButton(void)
 void powerbutton::event()
 {
     if (gpio_get(POWER_BUTTON_PORT))
@@ -46,7 +46,7 @@ void powerbutton::event()
     }
 }
 
-//bool checkChangePowerButtonStat(void)
+// bool checkChangePowerButtonStat(void)
 bool powerbutton::checkChange(void)
 {
     if (counter & 0x80)
@@ -57,7 +57,7 @@ bool powerbutton::checkChange(void)
     return false;
 }
 
-//bool readPowerButtonStat(void)
+// bool readPowerButtonStat(void)
 bool powerbutton::readStat(void)
 {
     if (counter & 0x40)
