@@ -38,6 +38,8 @@ public:
     uint16_t getTrainAddr(void);
     void writeTrainAddr(uint16_t addr);
 
+    void refreshTrainAddr(void);
+
     void setInUse(void);
     void setIdle(void);
     void setCommon(void);

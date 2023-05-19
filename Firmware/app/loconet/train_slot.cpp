@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "train_slot.h"
 
-//#include "../trainctrl.h"
+// #include "../trainctrl.h"
 
 void loconetTrainSlot::init(void)
 {
@@ -107,7 +107,13 @@ bool loconetTrainSlot::writeSpd(uint8_t spd)
     tInfo = trainctrl::getTrainCtrl(trainAddr);
     if (!tInfo.enable)
     {
-        return false;
+        // return false;
+        refreshTrainAddr();
+        tInfo = trainctrl::getTrainCtrl(trainAddr);
+        if (!tInfo.enable)
+        {
+            return false;
+        }
     }
 
     timeoutCounter = 0;
@@ -325,6 +331,17 @@ void loconetTrainSlot::writeTrainAddr(uint16_t addr)
 
     timeoutCounter = 0;
     tInfo = trainctrl::selectNewTrain(trainAddr);
+}
+
+void loconetTrainSlot::refreshTrainAddr(void)
+{
+    trainctrl::trainctrlresp tInfo;
+
+    tInfo = trainctrl::getTrainCtrl(trainAddr);
+    if (!tInfo.enable)
+    {
+        tInfo = trainctrl::selectNewTrain(trainAddr);
+    }
 }
 
 void loconetTrainSlot::setInUse(void)

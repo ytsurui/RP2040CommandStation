@@ -3,6 +3,7 @@
 #include "packetRouter.h"
 #include "train_slot.h"
 #include "../acc_ctrl.h"
+#include <stdio.h>
 
 void loconetPacketRouter::execLocoAdr()
 {
@@ -15,6 +16,7 @@ void loconetPacketRouter::execLocoAdr()
     if (addr > 0)
     {
         slotID = loconetTrainSlot::getSlotID(addr);
+        printf("getSlotID: trainaddr=%d, slotID=%d\n", addr, slotID);
         if (slotID == 0xFF)
         {
             // New Slot
@@ -23,7 +25,7 @@ void loconetPacketRouter::execLocoAdr()
             {
                 slotObj = loconetTrainSlot::getSlotObj(slotID);
                 slotObj->writeTrainAddr(addr);
-                //slotObj.writeTrainAddr(8);
+                // slotObj.writeTrainAddr(8);
                 sendSlotReadData(slotID);
                 return;
             }
@@ -32,6 +34,9 @@ void loconetPacketRouter::execLocoAdr()
         }
         else
         {
+            // slotObj = loconetTrainSlot::getSlotObj(slotID);
+            // slotObj->writeTrainAddr(addr);
+            slotObj->refreshTrainAddr();
             sendSlotReadData(slotID);
             return;
         }
