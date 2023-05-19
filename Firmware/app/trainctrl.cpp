@@ -85,6 +85,7 @@ void trainctrl::releaseTrain(uint16_t addr)
         tempAddr = trainCtrlData[i].getAddr();
         if (tempAddr == addr)
         {
+            printf("release train, addr=%d\n", addr);
             trainCtrlData[i].init();
             return;
         }
@@ -111,7 +112,7 @@ trainctrl::trainctrlresp trainctrl::selectNewTrain(uint16_t addr)
         {
             respData.enable = true;
             respData.train = &trainCtrlData[i];
-            // printf("selectNewTrain: Get Exist TrainCtrlData: addr=%d, index=%d\n", addr, i);
+            printf("selectNewTrain: Get Exist TrainCtrlData: addr=%d, index=%d\n", addr, i);
             return (respData);
         }
         else if (tempAddr == 0)
@@ -127,7 +128,7 @@ trainctrl::trainctrlresp trainctrl::selectNewTrain(uint16_t addr)
     {
         return (respData);
     }
-    // printf("selectNewTrain: Get New TrainCtrlData: addr=%d, index=%d\n", addr, newSlotIndex);
+    printf("selectNewTrain: Get New TrainCtrlData: addr=%d, index=%d\n", addr, newSlotIndex);
     trainCtrlData[newSlotIndex].setAddr(addr);
     respData.enable = true;
     respData.train = &trainCtrlData[newSlotIndex];
