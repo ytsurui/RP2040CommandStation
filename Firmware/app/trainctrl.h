@@ -1,5 +1,5 @@
 
-#define TRAIN_CTRL_MAX 500
+#define TRAIN_CTRL_MAX 1000
 
 #define PACKET_SEND_INTERVAL 1000
 #define TRAIN_TIMEOUT_MS 2400000
@@ -32,6 +32,9 @@ public:
     uint8_t getFuncG5(void);
     uint8_t getFuncG6(void);
 
+    uint8_t getDirFlag(void);
+    void setDirFlag(uint8_t dir);
+
 private:
     typedef struct
     {
@@ -57,6 +60,8 @@ private:
     uint16_t addr;
     uint32_t lastCtrlCounter;
 
+    uint8_t directionFlag;
+
     trainCtrlInfo trainData;
     void taskStub(trainDataInfo targetData);
 };
@@ -76,6 +81,7 @@ public:
 
     static trainctrlresp selectNewTrain(uint16_t addr);
     static trainctrlresp getTrainCtrl(uint16_t addr);
+    static trainctrlresp getTrainCtrlWithNewObj(uint16_t addr);
     static void releaseTrain(uint16_t addr);
 
 private:

@@ -161,11 +161,25 @@ trainctrl::trainctrlresp trainctrl::getTrainCtrl(uint16_t addr)
     return respData;
 }
 
+trainctrl::trainctrlresp trainctrl::getTrainCtrlWithNewObj(uint16_t addr)
+{
+    trainctrlresp respData;
+
+    respData = getTrainCtrl(addr);
+    if (respData.enable) {
+        return respData;
+    }
+
+    respData = selectNewTrain(addr);
+    return respData;
+}
+
 void trainInfo::init(void)
 {
     // printf("trainInfo init: lastAddr=%d\n", addr);
     addr = 0;
     lastCtrlCounter = 0;
+    directionFlag = 1;  // FOR
     trainData.speed14.enable = false;
     trainData.speed28.enable = false;
     trainData.speed128.enable = false;
@@ -491,4 +505,14 @@ uint8_t trainInfo::getFuncG4(void)
 uint8_t trainInfo::getFuncG5(void)
 {
     return (trainData.FuncGroup5.data1);
+}
+
+uint8_t trainInfo::getDirFlag(void)
+{
+    return directionFlag;
+}
+
+void trainInfo::setDirFlag(uint8_t dir)
+{
+    directionFlag = dir;
 }
