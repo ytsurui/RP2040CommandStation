@@ -37,11 +37,17 @@ add_executable(
     app/trainpacket.cpp
     app/acc_ctrl.cpp
     app/progtrak.cpp
+
     app/loconet/packetRouter.cpp
     app/loconet/responser.cpp
     app/loconet/exec.cpp
     app/loconet/train_slot.cpp
     app/loconet/train_slot_global.cpp
+
+    app/mt40bus/comparestr.cpp
+    app/mt40bus/datareceiver.cpp
+    app/mt40bus/datasender.cpp
+    app/mt40bus/cmdexec.cpp
 
     app/trainctrl.cpp
 
