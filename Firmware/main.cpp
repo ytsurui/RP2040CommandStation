@@ -30,6 +30,8 @@
 #include "peripheral/uart_ctrl.h"
 #include "app/loconet/packetRouter.h"
 
+#include "app/mt40bus/mt40bus.h"
+
 #include <stdio.h>
 
 void subCoreMain();
@@ -41,8 +43,15 @@ void subCoreMain();
 void sendWiredUart(uint8_t data)
 {
     uartCtrl::getInstance(0)->send(data);
+    printf("data: %c\n", data);
+    //uartCtrl::getInstance(1)->send(data);
+}
+
+void sendWirelessUart(uint8_t data)
+{
     uartCtrl::getInstance(1)->send(data);
 }
+
 
 void wirelessRecv(uint8_t data)
 {
@@ -53,7 +62,9 @@ void wirelessRecv(uint8_t data)
 
 void wiredRecv(uint8_t data)
 {
-    loconetPacketRouter::recv(data);
+    //loconetPacketRouter::recv(data);
+    //printf("recv: %c\n", data);
+    mt40busCtrl::recv(data);
 }
 
 //  Main Core Routine
@@ -64,7 +75,8 @@ int main()
     // uartTest::init();
     uartCtrl::globalInit();
 
-    uartCtrl::getInstance(0)->setBaudRate(16600);
+    //uartCtrl::getInstance(0)->setBaudRate(16600);
+    uartCtrl::getInstance(0)->setBaudRate(115200);
     uartCtrl::getInstance(1)->setBaudRate(19200);
 
     stdio_init_all();
@@ -103,7 +115,10 @@ int main()
     // uartCtrl::getInstance(0)->setRecvCallback(loconetPacketRouter::recv);
     uartCtrl::getInstance(0)->setRecvCallback(wiredRecv);
     uartCtrl::getInstance(1)->setRecvCallback(wirelessRecv);
-    loconetPacketRouter::setSender(sendWiredUart);
+    //loconetPacketRouter::setSender(sendWiredUart);
+    loconetPacketRouter::setSender(sendWirelessUart);
+
+    mt40busCtrl::setSender(sendWiredUart);
 
     currentMonitor::init();
     voltageMonitor::init();
