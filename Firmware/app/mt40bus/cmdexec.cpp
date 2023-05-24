@@ -39,7 +39,14 @@ void mt40busCtrl::execCmdPWS(uint32_t *args, uint8_t argCount)
 {
     if (argCount == 0) {
         // Request to Master Packet
+        uint32_t respArgs[1];
+        if (dccport::getPowerStat()) {
+            respArgs[0] = 1;
+        } else {
+            respArgs[0] = 0;
+        }
 
+        sendCmd('PWS', respArgs, 1);
     }
 }
 
@@ -219,7 +226,18 @@ void mt40busCtrl::execCmdTOS(uint32_t *args, uint8_t argCount)
 
     if (argCount == 1) {
         // Status Request
-        
+        uint32_t respArgs[2];
+
+        respArgs[0] = args[0];
+        if (accessoryCtrl::getAccessoryStat(addr)) {
+            // Closed
+            respArgs[1] = 1;
+        } else {
+            // Thrown
+            respArgs[1] = 0;
+        }
+
+        sendCmd('TOS', respArgs, 2);
     }
 }
 

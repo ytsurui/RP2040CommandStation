@@ -51,16 +51,19 @@ class mt40busCtrl
         static void execCmdPWS(uint32_t *args, uint8_t argCount);
 
         // Train Direction
-        static void execCmdDI(uint32_t *args, uint8_t argCount);
+        static void execCmdDI(uint32_t *args, uint8_t argCount);    // Train Direction
+        static void execCmdDIS(uint32_t *args, uint8_t argCount);   // Train Direction Status
 
         // Train Function
-        static void execCmdFN(uint32_t *args, uint8_t argCount);
+        static void execCmdFN(uint32_t *args, uint8_t argCount);    // Train Function
+        static void execCmdFNS(uint32_t *args, uint8_t argCount);   // Train Function Status
 
         // Train Speed
-        static void execCmdSP(uint32_t *args, uint8_t argCount);
+        static void execCmdSP(uint32_t *args, uint8_t argCount);    // Set Train Speed
+        static void execCmdSPS(uint32_t *args, uint8_t argCount);   // Get Train Speed Status
 
         // Turnout(Accessory) Operation
-        static void execCmdTO(uint32_t *args, uint8_t argCount);
-        static void execCmdTOS(uint32_t *args, uint8_t argCount);
+        static void execCmdTO(uint32_t *args, uint8_t argCount);    // Turnout Operation
+        static void execCmdTOS(uint32_t *args, uint8_t argCount);   // Turnout Operation Status
 
 };
