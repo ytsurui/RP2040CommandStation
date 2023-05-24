@@ -16,7 +16,7 @@ void mt40busCtrl::init()
 
 void mt40busCtrl::recv(uint8_t rData)
 {
-    if (rData == '\r') {
+    if ((rData == '\r') || (rData = ' ')) {
         // Ignore
         //printf("packet ignore\n");
         return;
