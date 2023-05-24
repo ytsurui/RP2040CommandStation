@@ -29,6 +29,7 @@ public:
 
     static void setPowerStat(bool stat);
     static void togglePowerStat(void);
+    static bool getPowerStat(void);
     static bool dcc_railcom_cutout_running(void);
 
     static void setProgmode(bool stat);
