@@ -7,7 +7,9 @@ class mt40busCtrl
         static void init(void);
 
         static void recv(uint8_t rData);
+
         static void setSender(void (*method)(uint8_t));
+        static void sendCmd(uint32_t cmd, uint32_t *args, uint8_t length);
 
     private:
 
@@ -37,9 +39,11 @@ class mt40busCtrl
         static bool compareStr(char *arg1, uint8_t length1, char *arg2, uint8_t length2);
 
         static uint8_t decodeASCIItoNum(char data, bool enHEX);
+        static void encodeNumToASCIIoct(uint32_t src, uint8_t *dest, uint8_t *length);
 
         static uint16_t decodeLocoAddr(uint32_t arg);
         static uint16_t decodeAccAddr(uint32_t arg);
+
 
         // Power Control / Toggle
         static void execCmdPW(uint32_t *args, uint8_t argCount);
