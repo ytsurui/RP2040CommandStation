@@ -1,5 +1,6 @@
 
 #include "pico/stdlib.h"
+#include <stdio.h>
 
 #include "../trainctrl.h"
 #include "mt40bus.h"
@@ -10,6 +11,7 @@
 
 void mt40busCtrl::execCmdPW(uint32_t *args, uint8_t argCount)
 {
+    //printf("newStat: %d, argCount: %d\n", args[0], argCount);
     switch (argCount) {
         case 1:
             if (args[0] == 0) {

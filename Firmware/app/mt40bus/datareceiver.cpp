@@ -18,10 +18,12 @@ void mt40busCtrl::recv(uint8_t rData)
 {
     if (rData == '\r') {
         // Ignore
+        //printf("packet ignore\n");
         return;
     }
     if (rData == '\n') {
         // Data End
+        //printf("data end\n");
         bufCopy(&recvData, &execData);
         recvData.length = 0;
 
@@ -36,6 +38,7 @@ void mt40busCtrl::recv(uint8_t rData)
         
         // Parse
         execPacket();
+        //printf("data exec\n");
         return;
     }
 
@@ -43,6 +46,7 @@ void mt40busCtrl::recv(uint8_t rData)
         return;
     }
 
+    //printf("data recv: %c\n", rData);
     recvData.Buf[recvData.length] = rData;
     recvData.length++;
 }
@@ -94,16 +98,23 @@ void mt40busCtrl::execPacket()
     argGetCount = 0;
     mode = EXEC_PACKET_MODE_CMD;
 
+    printf("%s\n", execData.Buf);
+
     for (i = 0; i < execData.length; i++) {
+        //printf("buf[%d]: %c, mode=%d\n", i, execData.Buf[i], mode);
+
         switch (mode) {
             case EXEC_PACKET_MODE_CMD:    
                 if (i > 3) return;
                 if (execData.Buf[i] == '(' || execData.Buf[i] == '{') {
                     cmdChkFlag = true;
                     mode = EXEC_PACKET_MODE_ARGS;
+                    argTable[0] = 0;
                     break;
                 }
-                cmdData = (cmdData << 8) || execData.Buf[i];
+                //printf("cmdData: %d, data: %d\n", cmdData, execData.Buf[i]);
+                cmdData = (cmdData << 8) | execData.Buf[i];
+                //printf("cmdData: %d\n", cmdData);
                 break;
             case EXEC_PACKET_MODE_ARGS:
                 switch (execData.Buf[i]) {
@@ -112,6 +123,7 @@ void mt40busCtrl::execPacket()
                         enableHEX = false;
                         argGetCount = 0;
                         argIndex++;
+                        argTable[argIndex] = 0;
                         break;
                     case '}':
                     case ')':
@@ -148,6 +160,9 @@ void mt40busCtrl::execPacket()
             }
         }
     }
+
+    //printf("cmdData: %d\n", cmdData);
+
     if (!cmdChkFlag || !cmdExitFlag) return;
 
 
