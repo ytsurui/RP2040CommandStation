@@ -16,7 +16,7 @@ void mt40busCtrl::init()
 
 void mt40busCtrl::recv(uint8_t rData)
 {
-    if ((rData == '\r') || (rData = ' ')) {
+    if ((rData == '\r') || (rData == ' ')) {
         // Ignore
         //printf("packet ignore\n");
         return;
@@ -183,13 +183,25 @@ void mt40busCtrl::execPacket()
             // Train Direction
             execCmdDI(argTable, argIndex);
             break;
+        case 'DIS':
+            // Train Direction Status
+            execCmdDIS(argTable, argIndex);
+            break;
         case 'FN':
             // Train Function
             execCmdFN(argTable, argIndex);
             break;
+        case 'FNS':
+            // Train Function Status;
+            execCmdFNS(argTable, argIndex);
+            break;
         case 'SP':
             // Train Speed
             execCmdSP(argTable, argIndex);
+            break;
+        case 'SPS':
+            // Train Speed Status
+            execCmdSPS(argTable, argIndex);
             break;
         case 'TO':
             // Turnout (Accessory Decoders)
