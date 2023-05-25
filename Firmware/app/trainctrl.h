@@ -25,6 +25,7 @@ public:
     bool setFuncG5(uint8_t data);
     bool setFuncG6(uint8_t data);
 
+    bool getSpeedType(uint8_t *spd, uint8_t *spdType);
     uint8_t getFuncG1(void);
     uint8_t getFuncG2(void);
     uint8_t getFuncG3(void);

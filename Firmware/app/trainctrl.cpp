@@ -437,6 +437,25 @@ bool trainInfo::setSpeed128(uint8_t dir, uint8_t spd)
     return true;
 }
 
+bool trainInfo::getSpeedType(uint8_t *spd, uint8_t *spdType)
+{
+    if (trainData.speed128.enable) {
+        *spd = trainData.speed128.data2;
+        *spdType = 2;
+    } else if (trainData.speed28.enable) {
+        *spd = trainData.speed28.data2;
+        *spdType = 1;
+    } else if (trainData.speed14.enable) {
+        *spd = trainData.speed14.data2;
+        *spdType = 0;
+    } else {
+        *spd = 0;
+        *spdType = 2;
+        return false;
+    }
+    return true;
+}
+
 bool trainInfo::setFuncG1(uint8_t data)
 {
     trainData.FuncGroup1.enable = true;
