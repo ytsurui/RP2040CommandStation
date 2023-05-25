@@ -66,16 +66,45 @@ void mt40busCtrl::execCmdDI(uint32_t *args, uint8_t argCount)
         return;
     }
 
-    if (args[2] == 2) {
+    if (args[1] == 2) {
         // Reverse
         trainCtrlObj.train->setDirFlag(2);
-    } else if (args[2] == 1 || args[2] == 0) {
+    } else if (args[1] == 1 || args[1] == 0) {
         // Forward
         trainCtrlObj.train->setDirFlag(1);
     }
 }
 
+// Train Direction Status
+//      DIS(addr)
+//      DIS(addr. status);
+void mt40busCtrl::execCmdDIS(uint32_t *args, uint8_t argCount)
+{
+    uint16_t addr;
+    trainctrl::trainctrlresp trainCtrlObj;
+
+    if (argCount == 1) {
+
+        addr = decodeLocoAddr(args[0]);
+        if (addr == 0xFFFF) return;
+
+        trainCtrlObj = trainctrl::getTrainCtrlWithNewObj(addr);
+        if (!trainCtrlObj.enable) {
+            return;
+        }
+
+        uint32_t respArgs[2];
+        respArgs[0] = args[0];
+
+        respArgs[1] = trainCtrlObj.train->getDirFlag();
+        sendCmd('DIS', respArgs, 2);
+
+        return;
+    }
+}
+
 // Train Function
+//      FN(addr,funcNum,stat)
 void mt40busCtrl::execCmdFN(uint32_t *args, uint8_t argCount)
 {
     uint16_t addr;
@@ -161,6 +190,57 @@ void mt40busCtrl::execCmdFN(uint32_t *args, uint8_t argCount)
     }
 }
 
+// Train Function Status
+//      FNS(addr, group)
+//      FNS(addr, group, status)
+void mt40busCtrl::execCmdFNS(uint32_t *args, uint8_t argCount)
+{
+    uint16_t addr;
+    trainctrl::trainctrlresp trainCtrlObj;
+
+    if (argCount < 1) return;
+
+    addr = decodeLocoAddr(args[0]);
+    if (addr == 0xFFFF) return;
+
+    trainCtrlObj = trainctrl::getTrainCtrlWithNewObj(addr);
+    if (!trainCtrlObj.enable) {
+        return;
+    }
+
+    if (argCount == 2) {
+        // Function Status Request
+        uint32_t respArgs[3];
+
+        respArgs[0] = args[0];
+        respArgs[1] = args[1];
+
+        switch (args[1]) {
+            case 1:
+                // Group1 (F0-F4)
+                respArgs[2] = trainCtrlObj.train->getFuncG1();
+                break;
+            case 2:
+                // Group2 (F5-F12)
+                respArgs[2] = (trainCtrlObj.train->getFuncG3() << 4) | trainCtrlObj.train->getFuncG2();
+                break;
+            case 3:
+                // Group3 (F13-F20)
+                respArgs[2] = trainCtrlObj.train->getFuncG4();
+                break;
+            case 4:
+                // Group4 (F21-F28)
+                respArgs[2] = trainCtrlObj.train->getFuncG5();
+                break;
+            default:
+                return;
+        }
+
+        sendCmd('FNS', respArgs, 3);
+        return;
+    }
+}
+
 // Train Speed
 void mt40busCtrl::execCmdSP(uint32_t *args, uint8_t argCount)
 {
@@ -193,6 +273,37 @@ void mt40busCtrl::execCmdSP(uint32_t *args, uint8_t argCount)
             // speed-step 128
             trainCtrlObj.train->setSpeed128(trainCtrlObj.train->getDirFlag(), spd);
             break;
+    }
+}
+
+void mt40busCtrl::execCmdSPS(uint32_t *args, uint8_t argCount)
+{
+    uint16_t addr;
+    trainctrl::trainctrlresp trainCtrlObj;
+
+    uint8_t spd, ctrlType;
+    
+    if (argCount < 1) return;
+
+    addr = decodeLocoAddr(args[0]);
+    if (addr == 0xFFFF) return;
+
+    trainCtrlObj = trainctrl::getTrainCtrlWithNewObj(addr);
+    if (!trainCtrlObj.enable) return;
+
+    if (argCount == 1) {
+        // Speed Status Request
+        uint32_t respArgs[3];
+
+        respArgs[0] = args[0];
+
+        if (trainCtrlObj.train->getSpeedType(&spd, &ctrlType)) {
+            respArgs[1] = spd;
+            respArgs[2] = ctrlType;
+
+            sendCmd('SPS', respArgs, 3);
+        }
+        return;
     }
 }
 
