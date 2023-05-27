@@ -11,6 +11,8 @@ class mt40busCtrl
         static void setSender(void (*method)(uint8_t));
         static void sendCmd(uint32_t cmd, uint32_t *args, uint8_t length);
 
+        static void setCarrierSenseFunc(bool (*method)(void));
+
     private:
 
         typedef struct
@@ -20,6 +22,14 @@ class mt40busCtrl
         } cb_info;
 
         static cb_info senderCb;
+
+        typedef struct
+        {
+            bool (*func)(void);
+            bool assigned;
+        } cb_bool_info;
+
+        static cb_bool_info carrierSenseCb;
 
         typedef struct
         {

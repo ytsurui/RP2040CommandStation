@@ -43,7 +43,7 @@ void subCoreMain();
 void sendWiredUart(uint8_t data)
 {
     uartCtrl::getInstance(0)->send(data);
-    printf("data: %c\n", data);
+    //printf("data: %c\n", data);
     //uartCtrl::getInstance(1)->send(data);
 }
 
@@ -65,6 +65,11 @@ void wiredRecv(uint8_t data)
     //loconetPacketRouter::recv(data);
     //printf("recv: %c\n", data);
     mt40busCtrl::recv(data);
+}
+
+bool wiredCarrierSense(void)
+{
+    return uartCtrl::getBusGPIO(1);
 }
 
 //  Main Core Routine
@@ -119,6 +124,7 @@ int main()
     loconetPacketRouter::setSender(sendWirelessUart);
 
     mt40busCtrl::setSender(sendWiredUart);
+    mt40busCtrl::setCarrierSenseFunc(wiredCarrierSense);
 
     currentMonitor::init();
     voltageMonitor::init();

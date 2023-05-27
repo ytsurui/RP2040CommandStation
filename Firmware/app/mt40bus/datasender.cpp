@@ -2,12 +2,21 @@
 #include "pico/stdlib.h"
 #include "mt40bus.h"
 
+#include <stdio.h>
+
 mt40busCtrl::cb_info mt40busCtrl::senderCb;
+mt40busCtrl::cb_bool_info mt40busCtrl::carrierSenseCb;
 
 void mt40busCtrl::setSender(void (*method)(uint8_t))
 {
     senderCb.func = method;
     senderCb.assigned = true;
+}
+
+void mt40busCtrl::setCarrierSenseFunc(bool (*method)(void))
+{
+    carrierSenseCb.func = method;
+    carrierSenseCb.assigned = true;
 }
 
 void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
@@ -19,6 +28,16 @@ void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
     bool separateFlag;
 
     if (cmd == 0) return;
+
+    if (carrierSenseCb.assigned) {
+        //printf("carrier-sense...\n");
+        sleep_ms(5);
+        while (carrierSenseCb.func()) {
+            //printf("cb-wait\n");
+        }
+    }
+
+    //printf("data send cmd: %d\n", cmd);
 
     while (cmd != 0) {
         byteData = (cmd & 0xFF000000) >> 24;

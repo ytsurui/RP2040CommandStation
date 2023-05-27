@@ -12,6 +12,11 @@ void mt40busCtrl::init()
 {
     //recvData.bufpos = 0;
     recvData.length = 0;
+
+    senderCb.func = nullptr;
+    senderCb.assigned = false;
+    carrierSenseCb.func = nullptr;
+    carrierSenseCb.assigned = false;
 }
 
 void mt40busCtrl::recv(uint8_t rData)
@@ -212,6 +217,10 @@ void mt40busCtrl::execPacket()
             execCmdTOS(argTable, argIndex);
             break;
         
+    }
+
+    for (i = 0; i < MT40BUS_BUF_LENGTH; i++) {
+        execData.Buf[i] = 0;
     }
 
 }
