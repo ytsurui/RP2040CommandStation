@@ -18,6 +18,11 @@ public:
 
     static void bridgeMode(bool stat);
 
+
+    static void BusGPIOdir(uint8_t num, bool dir, bool pullup);
+    static void putBusGPIO(uint8_t num, bool value);
+    static bool getBusGPIO(uint8_t num);
+
 private:
     static uartCtrl uartCtrlInst[2];
     static bool bridgeModeStat;
