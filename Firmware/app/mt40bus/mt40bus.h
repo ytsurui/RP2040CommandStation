@@ -1,10 +1,13 @@
 
 #define MT40BUS_BUF_LENGTH   64
 
+#define LAST_SEND_RECV_COUNT_TIMEOUT    10000       // 10000ms = 10sec
+
 class mt40busCtrl
 {
     public:
         static void init(void);
+        static void eventMS(void);
 
         static void recv(uint8_t rData);
 
@@ -12,6 +15,9 @@ class mt40busCtrl
         static void sendCmd(uint32_t cmd, uint32_t *args, uint8_t length);
 
         static void setCarrierSenseFunc(bool (*method)(void));
+        
+        // Echo Function
+        static void sendCmdEcho(void);
 
     private:
 
@@ -39,6 +45,8 @@ class mt40busCtrl
 
         static packetBuf recvData;
         static packetBuf execData;
+
+        static uint32_t lastSendRecvCount;
 
         static void bufCopy(packetBuf *src, packetBuf *dest);
 
@@ -76,4 +84,6 @@ class mt40busCtrl
         static void execCmdTO(uint32_t *args, uint8_t argCount);    // Turnout Operation
         static void execCmdTOS(uint32_t *args, uint8_t argCount);   // Turnout Operation Status
 
+        // CommandStation Power Status
+        static void execCmdCPS(uint32_t *args, uint8_t argCount);
 };

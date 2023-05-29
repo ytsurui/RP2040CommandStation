@@ -21,6 +21,8 @@ void mt40busCtrl::init()
 
 void mt40busCtrl::recv(uint8_t rData)
 {
+    lastSendRecvCount = 0;
+
     if ((rData == '\r') || (rData == ' ')) {
         // Ignore
         //printf("packet ignore\n");
@@ -68,6 +70,7 @@ void mt40busCtrl::bufCopy(packetBuf *src, packetBuf *dest)
 
 #define EXEC_PACKET_MODE_CMD    1
 #define EXEC_PACKET_MODE_ARGS   2
+#define EXEC_PACKET_MODE_LBUS   11
 
 void mt40busCtrl::execPacket()
 {
@@ -80,8 +83,13 @@ void mt40busCtrl::execPacket()
     uint8_t argGetCount;
     uint8_t argIndex = 0;
 
+
     uint32_t cmdData;
     uint32_t argTable[10];
+
+    bool LBUSlowerFlag;
+    uint8_t LBUSrecvDatas[32];
+    uint8_t LBUSgetpos;
 
     // Parse
     //if (execData.Buf[0] != '(' && execData.Buf[0] != '{') {
@@ -113,7 +121,13 @@ void mt40busCtrl::execPacket()
                 if (i > 3) return;
                 if (execData.Buf[i] == '(' || execData.Buf[i] == '{') {
                     cmdChkFlag = true;
-                    mode = EXEC_PACKET_MODE_ARGS;
+                    if (cmdData == 'LBUS') {
+                        mode = EXEC_PACKET_MODE_LBUS;
+                        LBUSlowerFlag = false;
+                        LBUSgetpos = 0;
+                    } else {
+                        mode = EXEC_PACKET_MODE_ARGS;
+                    }
                     argTable[0] = 0;
                     break;
                 }
@@ -158,20 +172,46 @@ void mt40busCtrl::execPacket()
                         break;
                 }
                 break;
-            
-            if (cmdExitFlag) {
-                // コマンド終了フラグを確認
-                break;
-            }
+            case EXEC_PACKET_MODE_LBUS:
+                switch (execData.Buf[i]) {
+                    case '}':
+                    case ')':
+                        // Command END
+                        cmdExitFlag = true;
+                        break;
+                    default:
+                        decodeData = decodeASCIItoNum(execData.Buf[i], true);
+                        if (LBUSlowerFlag) {
+                            LBUSrecvDatas[LBUSgetpos] |= decodeData;
+                            LBUSlowerFlag = false;
+                            LBUSgetpos++;
+                        } else {
+                            LBUSrecvDatas[LBUSgetpos] = (decodeData << 4);
+                            LBUSlowerFlag = true;
+                        }
+                        break;
+                }
         }
+        if (cmdExitFlag) {
+            // コマンド終了フラグを確認
+            break;
+        }
+        
     }
 
     //printf("cmdData: %d\n", cmdData);
 
     if (!cmdChkFlag || !cmdExitFlag) return;
 
+    if (cmdData == 'LBUS') {
+        return;
+    }
+
 
     switch (cmdData) {
+        case 'ECHO':
+            // Echo
+            break;
         case 'PW':
             // Power
             execCmdPW(argTable, argIndex);            
@@ -216,7 +256,10 @@ void mt40busCtrl::execPacket()
             // Turnout (Accessory Decoders) Status
             execCmdTOS(argTable, argIndex);
             break;
-        
+        case 'CPS':
+            // CommandStation Power Status
+            execCmdCPS(argTable, argIndex);
+            break;
     }
 
     for (i = 0; i < MT40BUS_BUF_LENGTH; i++) {

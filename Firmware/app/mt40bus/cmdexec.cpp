@@ -9,6 +9,9 @@
 
 #include "../acc_ctrl.h"
 
+#include "../voltage_monitor.h"
+#include "../current_monitor.h"
+
 void mt40busCtrl::execCmdPW(uint32_t *args, uint8_t argCount)
 {
     //printf("newStat: %d, argCount: %d\n", args[0], argCount);
@@ -349,6 +352,19 @@ void mt40busCtrl::execCmdTOS(uint32_t *args, uint8_t argCount)
         }
 
         sendCmd('TOS', respArgs, 2);
+    }
+}
+
+void mt40busCtrl::execCmdCPS(uint32_t *args, uint8_t argCount)
+{
+    if (argCount == 0) {
+        // CommandStation Status Request
+        uint32_t respArgs[2];
+
+        respArgs[0] = voltageMonitor::get();
+        respArgs[1] = currentMonitor::getCurrent();
+
+        sendCmd('CPS', respArgs, 2);
     }
 }
 

@@ -80,6 +80,7 @@ void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
     if (senderCb.assigned) {
         for (i = 0; i < byteLength; i++) {
             senderCb.func(sendData[i]);
+            lastSendRecvCount = 0;
             //printf("index: %d, data: %c\n", i, sendData[i]);
         }
     //} else {
@@ -87,6 +88,11 @@ void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
     }
 
     //printf("send complete\n");
+}
+
+void mt40busCtrl::sendCmdEcho(void)
+{
+    sendCmd('ECHO', nullptr, 0);
 }
 
 void mt40busCtrl::encodeNumToASCIIoct(uint32_t src, uint8_t *dest, uint8_t *length)

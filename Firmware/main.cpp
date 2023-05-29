@@ -42,6 +42,7 @@ void subCoreMain();
 
 void sendWiredUart(uint8_t data)
 {
+    commLED::set();
     uartCtrl::getInstance(0)->send(data);
     //printf("data: %c\n", data);
     //uartCtrl::getInstance(1)->send(data);
@@ -64,6 +65,7 @@ void wiredRecv(uint8_t data)
 {
     //loconetPacketRouter::recv(data);
     //printf("recv: %c\n", data);
+    commLED::set();
     mt40busCtrl::recv(data);
 }
 
@@ -194,6 +196,8 @@ int main()
             // throttleApp::event();
 
             loconetPacketRouter::event();
+
+            mt40busCtrl::eventMS();
         }
 
         trainctrl::task();

@@ -44,6 +44,7 @@ add_executable(
     app/loconet/train_slot.cpp
     app/loconet/train_slot_global.cpp
 
+    app/mt40bus/event.cpp
     app/mt40bus/comparestr.cpp
     app/mt40bus/datareceiver.cpp
     app/mt40bus/datasender.cpp
