@@ -112,7 +112,7 @@ trainctrl::trainctrlresp trainctrl::selectNewTrain(uint16_t addr)
         {
             respData.enable = true;
             respData.train = &trainCtrlData[i];
-            printf("selectNewTrain: Get Exist TrainCtrlData: addr=%d, index=%d\n", addr, i);
+            //printf("selectNewTrain: Get Exist TrainCtrlData: addr=%d, index=%d\n", addr, i);
             return (respData);
         }
         else if (tempAddr == 0)
@@ -128,7 +128,7 @@ trainctrl::trainctrlresp trainctrl::selectNewTrain(uint16_t addr)
     {
         return (respData);
     }
-    printf("selectNewTrain: Get New TrainCtrlData: addr=%d, index=%d\n", addr, newSlotIndex);
+    //printf("selectNewTrain: Get New TrainCtrlData: addr=%d, index=%d\n", addr, newSlotIndex);
     trainCtrlData[newSlotIndex].setAddr(addr);
     respData.enable = true;
     respData.train = &trainCtrlData[newSlotIndex];
