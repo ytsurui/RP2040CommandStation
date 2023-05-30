@@ -18,9 +18,11 @@ uint16_t currentMonitor::viewCurrentValue = 0;
 uint16_t currentMonitor::currValueArray[CURR_VALUE_ARRAY_LENGTH];
 uint8_t currentMonitor::currValueIndex = 0;
 
-#ifdef HIGHPOWER
+#define POWERMODE 0
+
+#if POWERMODE == 1
 #define SHUTDOWN_CURRENT 4500 // High-Power
-#elif ULTRAPOWER
+#elif POWERMODE == 2
 #define SHUTDOWN_CURRENT 10500  // Ultra-Power
 #else
 #define SHUTDOWN_CURRENT 1600
@@ -49,14 +51,14 @@ void currentMonitor::init(void)
     for (i = 0; i < 32; i++)
     {
         currSum += currTank[i];
-        printf("currTank[%d]=%d, currSum=%d\n", i, currTank[i], currSum);
+        //printf("currTank[%d]=%d, currSum=%d\n", i, currTank[i], currSum);
     }
 
-    printf("currSum: %d\n", currSum);
+    //printf("currSum: %d\n", currSum);
 
     currentAdcOffsetValue = (uint16_t)(currSum / 32);
 
-    printf("current ADC offset: %d\n", currentAdcOffsetValue);
+    //printf("current ADC offset: %d\n", currentAdcOffsetValue);
 }
 
 void currentMonitor::task(void)
@@ -167,13 +169,13 @@ void currentMonitor::event(void)
 
             if (overCurrentCounter >= OVERCURRENT_COUNTER_MAX)
             {
-                printf("overcurrent shutdown, value=%d\n", currentValue);
+                //printf("overcurrent shutdown, value=%d\n", currentValue);
                 dccport::setPowerStat(false);
                 failureLED::setStat(true);
             }
             else if ((OVERCURRENT_COUNTER_MAX - overCurrentCounter) < OVERCURRENT_RETURN_VALUE)
             {
-                printf("overcurrent timeout shutdown, value=%d\n", currentValue);
+                //printf("overcurrent timeout shutdown, value=%d\n", currentValue);
                 dccport::setPowerStat(false);
                 failureLED::setStat(true);
             }
