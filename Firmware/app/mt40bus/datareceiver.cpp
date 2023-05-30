@@ -27,14 +27,14 @@ void mt40busCtrl::init()
 
 void mt40busCtrl::recv(uint8_t rData)
 {
-    lastSendRecvCount = 0;
+    lastSendRecvCount = 0;   
 
-    if ((rData == '\r') || (rData == ' ')) {
+    if ((rData == '\n') || (rData == ' ')) {
         // Ignore
         //printf("packet ignore\n");
         return;
     }
-    if (rData == '\n') {
+    if (rData == '\r') {
         // Data End
         //printf("data end\n");
         bufCopy(&recvData, &execData);
@@ -50,6 +50,18 @@ void mt40busCtrl::recv(uint8_t rData)
         }
         
         // Parse
+
+        if (recvedEchoCb.assigned) {
+            uint8_t i;
+
+            for (i = 0; i < execData.length; i++) {
+                recvedEchoCb.func(execData.Buf[i]);
+            }
+
+            recvedEchoCb.func('\r');
+            recvedEchoCb.func('\n');
+        }
+
         execPacket();
         //printf("data exec\n");
         return;
@@ -62,6 +74,11 @@ void mt40busCtrl::recv(uint8_t rData)
     //printf("data recv: %c\n", rData);
     recvData.Buf[recvData.length] = rData;
     recvData.length++;
+}
+
+void mt40busCtrl::receivedEchoCb(void (*func)(uint8_t)) {
+    recvedEchoCb.func = func;
+    recvedEchoCb.assigned = true;
 }
 
 void mt40busCtrl::bufCopy(packetBuf *src, packetBuf *dest)
@@ -87,6 +104,7 @@ void mt40busCtrl::execPacket()
     uint8_t decodeData;
     bool enableHEX;
     uint8_t argGetCount;
+    bool noneArgFlag = true;
     uint8_t argIndex = 0;
 
 
@@ -117,7 +135,7 @@ void mt40busCtrl::execPacket()
     argGetCount = 0;
     mode = EXEC_PACKET_MODE_CMD;
 
-    printf("%s\n", execData.Buf);
+    //printf("%s\n", execData.Buf);
 
     for (i = 0; i < execData.length; i++) {
         //printf("buf[%d]: %c, mode=%d\n", i, execData.Buf[i], mode);
@@ -154,7 +172,7 @@ void mt40busCtrl::execPacket()
                     case ')':
                         // Command END
                         cmdExitFlag = true;
-                        argIndex++;
+                        if (!noneArgFlag) argIndex++;
                         break;
                     case 'x':
                     case 'X':
@@ -165,6 +183,7 @@ void mt40busCtrl::execPacket()
                         break;
                     default:
                         decodeData = decodeASCIItoNum(execData.Buf[i], enableHEX);
+                        noneArgFlag = false;
                         if (decodeData == 0xFF)
                             return;
                         if (enableHEX) {

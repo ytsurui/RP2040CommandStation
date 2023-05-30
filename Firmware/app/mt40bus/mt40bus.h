@@ -10,6 +10,7 @@ class mt40busCtrl
         static void eventMS(void);
 
         void recv(uint8_t rData);
+        void receivedEchoCb(void (*func)(uint8_t));
 
         static void setSender(void (*method)(uint8_t));
         static void sendCmd(uint32_t cmd, uint32_t *args, uint8_t length);
@@ -30,6 +31,8 @@ class mt40busCtrl
         } cb_info;
 
         static cb_info senderCb;
+
+        cb_info recvedEchoCb;
 
         typedef struct
         {

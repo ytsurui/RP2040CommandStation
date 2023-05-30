@@ -2,6 +2,8 @@
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 
+#include "class/cdc/cdc_device.h"
+
 #include "peripheral/eventTimer.h"
 #include "peripheral/adcReader.h"
 #include "peripheral/dccsignalport.h"
@@ -46,6 +48,7 @@ void sendWiredUart(uint8_t data)
     uartCtrl::getInstance(0)->send(data);
     //printf("data: %c\n", data);
     //uartCtrl::getInstance(1)->send(data);
+    printf("%c", data);
 }
 
 void sendWirelessUart(uint8_t data)
@@ -69,6 +72,21 @@ void wiredRecv(uint8_t data)
     //mt40busCtrl::recv(data);
     mt40busCtrl::recvObj[0].recv(data);
 }
+
+void wiredRecvToUSBecho(uint8_t data)
+{
+    printf("%c", data);
+}
+
+void recvUSBserialChar(void)
+{
+    uint8_t rData;
+    rData = tud_cdc_read_char();
+    printf("%c", rData);
+    mt40busCtrl::recvObj[1].recv(rData);
+}
+
+
 
 bool wiredCarrierSense(void)
 {
@@ -129,6 +147,8 @@ int main()
     mt40busCtrl::setSender(sendWiredUart);
     mt40busCtrl::setCarrierSenseFunc(wiredCarrierSense);
 
+    mt40busCtrl::recvObj[0].receivedEchoCb(wiredRecvToUSBecho);
+
     currentMonitor::init();
     voltageMonitor::init();
 
@@ -148,6 +168,10 @@ int main()
         {
             // adcCurrentReadEvent();
             progtrak::readCurrent();
+        }
+
+        if (tud_cdc_available()) {
+            recvUSBserialChar();
         }
 
         // currentMonitor::task();
