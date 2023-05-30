@@ -359,12 +359,13 @@ void mt40busCtrl::execCmdCPS(uint32_t *args, uint8_t argCount)
 {
     if (argCount == 0) {
         // CommandStation Status Request
-        uint32_t respArgs[2];
+        uint32_t respArgs[3];
 
         respArgs[0] = voltageMonitor::get();
         respArgs[1] = currentMonitor::getCurrent();
-
-        sendCmd('CPS', respArgs, 2);
+        respArgs[2] = currentMonitor::getMaxCurrent();
+        
+        sendCmd('CPS', respArgs, 3);
     }
 }
 

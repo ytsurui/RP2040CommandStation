@@ -9,6 +9,7 @@ public:
     static void task(void);
     static void print(void);
     static uint16_t getCurrent(void);
+    static uint16_t getMaxCurrent(void);
 
 private:
     static uint8_t counter;

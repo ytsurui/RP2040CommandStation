@@ -18,9 +18,13 @@ uint16_t currentMonitor::viewCurrentValue = 0;
 uint16_t currentMonitor::currValueArray[CURR_VALUE_ARRAY_LENGTH];
 uint8_t currentMonitor::currValueIndex = 0;
 
-// #define SHUTDOWN_CURRENT 1600
+#ifdef HIGHPOWER
 #define SHUTDOWN_CURRENT 4500 // High-Power
-// #define SHUTDOWN_CURRENT 10500  // Ultra-Power
+#elif ULTRAPOWER
+#define SHUTDOWN_CURRENT 10500  // Ultra-Power
+#else
+#define SHUTDOWN_CURRENT 1600
+#endif
 #define EMER_CURRENT SHUTDOWN_CURRENT * 2.5
 
 #define OVERCURRENT_COUNTER_MAX 200
@@ -239,4 +243,9 @@ uint16_t currentMonitor::getCurrent(void)
 {
     // printf("currentValue: %d\n", currentValue);
     return (currentValue);
+}
+
+uint16_t currentMonitor::getMaxCurrent(void)
+{
+    return SHUTDOWN_CURRENT;
 }
