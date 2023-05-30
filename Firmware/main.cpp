@@ -66,7 +66,8 @@ void wiredRecv(uint8_t data)
     //loconetPacketRouter::recv(data);
     //printf("recv: %c\n", data);
     commLED::set();
-    mt40busCtrl::recv(data);
+    //mt40busCtrl::recv(data);
+    mt40busCtrl::recvObj[0].recv(data);
 }
 
 bool wiredCarrierSense(void)

@@ -5,18 +5,24 @@
 #include <stdio.h>
 #include <string.h>
 
-mt40busCtrl::packetBuf mt40busCtrl::recvData;
+//mt40busCtrl::packetBuf mt40busCtrl::recvData;
 mt40busCtrl::packetBuf mt40busCtrl::execData;
+
+mt40busCtrl mt40busCtrl::recvObj[3];
 
 void mt40busCtrl::init()
 {
     //recvData.bufpos = 0;
-    recvData.length = 0;
+    //recvData.length = 0;
 
     senderCb.func = nullptr;
     senderCb.assigned = false;
     carrierSenseCb.func = nullptr;
     carrierSenseCb.assigned = false;
+
+    recvObj[0].recvData.length = 0;
+    recvObj[1].recvData.length = 0;
+    recvObj[2].recvData.length = 0;
 }
 
 void mt40busCtrl::recv(uint8_t rData)

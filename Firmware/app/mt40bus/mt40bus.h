@@ -9,7 +9,7 @@ class mt40busCtrl
         static void init(void);
         static void eventMS(void);
 
-        static void recv(uint8_t rData);
+        void recv(uint8_t rData);
 
         static void setSender(void (*method)(uint8_t));
         static void sendCmd(uint32_t cmd, uint32_t *args, uint8_t length);
@@ -18,6 +18,8 @@ class mt40busCtrl
         
         // Echo Function
         static void sendCmdEcho(void);
+
+        static mt40busCtrl recvObj[3];
 
     private:
 
@@ -43,7 +45,7 @@ class mt40busCtrl
             uint8_t length;
         } packetBuf;
 
-        static packetBuf recvData;
+        packetBuf recvData;
         static packetBuf execData;
 
         static uint32_t lastSendRecvCount;
