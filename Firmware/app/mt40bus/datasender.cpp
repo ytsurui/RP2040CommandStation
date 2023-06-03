@@ -134,3 +134,15 @@ void mt40busCtrl::encodeNumToASCIIoct(uint32_t src, uint8_t *dest, uint8_t *leng
 
     *length = pos;
 }
+
+char mt40busCtrl::encodeNumToHexStr(uint8_t data)
+{
+    if (data <= 0x09) {
+        return ('0' + data);
+    }
+    if (data <= 0x0F) {
+        return ('A' + (data - 10));
+    }
+
+    return 0;
+}

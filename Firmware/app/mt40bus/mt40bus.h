@@ -3,6 +3,9 @@
 
 #define LAST_SEND_RECV_COUNT_TIMEOUT    10000       // 10000ms = 10sec
 
+#define ENABLE_LBUS
+//#define SET_LBUS_LOCAL_COMMAND
+
 class mt40busCtrl
 {
     public:
@@ -21,6 +24,12 @@ class mt40busCtrl
         static void sendCmdEcho(void);
 
         static mt40busCtrl recvObj[3];
+
+#ifdef ENABLE_LBUS
+        static void setLBUScommandReceiver(void (*func)(uint8_t));
+        static void setLBUScommandSender(void (*func)(uint8_t));
+        static void sendLBUSdata(uint8_t *packet, uint8_t length);
+#endif
 
     private:
 
@@ -41,6 +50,11 @@ class mt40busCtrl
         } cb_bool_info;
 
         static cb_bool_info carrierSenseCb;
+
+#ifdef ENABLE_LBUS
+        static cb_info LBUSrecvCb;
+        static cb_info LBUSsendCb;
+#endif
 
         typedef struct
         {
@@ -63,6 +77,7 @@ class mt40busCtrl
 
         static uint8_t decodeASCIItoNum(char data, bool enHEX);
         static void encodeNumToASCIIoct(uint32_t src, uint8_t *dest, uint8_t *length);
+        static char encodeNumToHexStr(uint8_t data);
 
         static uint16_t decodeLocoAddr(uint32_t arg);
         static uint16_t decodeAccAddr(uint32_t arg);

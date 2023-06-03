@@ -197,6 +197,7 @@ void mt40busCtrl::execPacket()
                         break;
                 }
                 break;
+#ifdef ENABLE_LBUS
             case EXEC_PACKET_MODE_LBUS:
                 switch (execData.Buf[i]) {
                     case '}':
@@ -216,6 +217,7 @@ void mt40busCtrl::execPacket()
                         }
                         break;
                 }
+#endif
         }
         if (cmdExitFlag) {
             // コマンド終了フラグを確認
@@ -228,10 +230,16 @@ void mt40busCtrl::execPacket()
 
     if (!cmdChkFlag || !cmdExitFlag) return;
 
+#ifdef ENABLE_LBUS
     if (cmdData == 'LBUS') {
+        if (LBUSrecvCb.assigned) {
+            for (i = 0; i < LBUSgetpos; i++) {
+                LBUSrecvCb.func(LBUSrecvDatas[i]);
+            }
+        }
         return;
     }
-
+#endif
 
     switch (cmdData) {
         case 'ECHO':
