@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 loconetPacketRouter::cb_info loconetPacketRouter::cbdata;
+loconetPacketRouter::cb_multidata loconetPacketRouter::cbSender2;
 
 void loconetPacketRouter::setSender(void (*method)(uint8_t))
 {
@@ -12,9 +13,20 @@ void loconetPacketRouter::setSender(void (*method)(uint8_t))
     cbdata.assigned = true;
 }
 
+void loconetPacketRouter::setMultidataSender(void (*method)(uint8_t*, uint8_t))
+{
+    cbSender2.func = method;
+    cbSender2.assigned = true;
+}
+
 void loconetPacketRouter::packetSend(uint8_t packet[], uint8_t length)
 {
     uint8_t i;
+
+    if (cbSender2.assigned) {
+        cbSender2.func(packet, length);
+        return;
+    }
 
     if (cbdata.assigned)
     {

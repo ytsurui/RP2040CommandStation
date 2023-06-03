@@ -10,6 +10,7 @@ public:
     static void recv(uint8_t packetByte);
 
     static void setSender(void (*method)(uint8_t));
+    static void setMultidataSender(void (*method)(uint8_t*, uint8_t));
 
 private:
     static uint8_t packetBuf[LOCONET_PACKET_BUF_MAX];
@@ -26,6 +27,14 @@ private:
     } cb_info;
 
     static cb_info cbdata;
+
+    typedef struct
+    {
+        void (*func)(uint8_t*, uint8_t);
+        bool assigned;
+    } cb_multidata;
+
+    static cb_multidata cbSender2;
 
     static void packetSend(uint8_t packet[], uint8_t length);
     static void sendLongAck(uint8_t ackOpCode, uint8_t ackMsg);
