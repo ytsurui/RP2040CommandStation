@@ -36,6 +36,10 @@
 
 #include <stdio.h>
 
+#ifdef ENABLE_LBUS
+//#define WIRELESS_MODE_LBUS
+#endif
+
 void subCoreMain();
 
 // uint16_t counter;
@@ -48,7 +52,7 @@ void sendWiredUart(uint8_t data)
     uartCtrl::getInstance(0)->send(data);
     //printf("data: %c\n", data);
     //uartCtrl::getInstance(1)->send(data);
-    printf("%c", data);
+    //printf("%c", data);
 }
 
 void sendWirelessUart(uint8_t data)
@@ -59,9 +63,13 @@ void sendWirelessUart(uint8_t data)
 
 void wirelessRecv(uint8_t data)
 {
+#ifdef WIRELESS_MODE_LBUS
     // Echo
     uartCtrl::getInstance(1)->send(data);
     loconetPacketRouter::recv(data);
+#else
+    mt40busCtrl::recvObj[1].recv(data);
+#endif
 }
 
 void wiredRecv(uint8_t data)
@@ -78,20 +86,60 @@ void wiredRecvToUSBecho(uint8_t data)
     printf("%c", data);
 }
 
+void wiredRecvEchoOtherPort(uint8_t data)
+{
+    printf("%c", data);
+#ifndef WIRELESS_MODE_LBUS
+    // Wired to Wireless bridge
+    uartCtrl::getInstance(1)->send(data);
+#endif
+}
+
+void wirelessRecvEchoOtherPort(uint8_t data)
+{
+    printf("%c", data);
+    uartCtrl::getInstance(0)->send(data);
+}
+
+void usbRecvEchoOtherPort(uint8_t data)
+{
+    uartCtrl::getInstance(0)->send(data);
+#ifndef WIRELESS_MODE_LBUS
+    // Wired to Wireless bridge
+    uartCtrl::getInstance(1)->send(data);
+#endif
+}
+
 void recvUSBserialChar(void)
 {
     uint8_t rData;
     rData = tud_cdc_read_char();
     printf("%c", rData);
-    mt40busCtrl::recvObj[1].recv(rData);
+    mt40busCtrl::recvObj[2].recv(rData);
 }
-
-
 
 bool wiredCarrierSense(void)
 {
     return uartCtrl::getBusGPIO(1);
 }
+
+#ifdef ENABLE_LBUS
+
+void sendLBUScommand(uint8_t *buf, uint8_t length)
+{
+    uint8_t i;
+
+    mt40busCtrl::sendLBUSdata(buf, length);
+
+#ifdef WIRELESS_MODE_LBUS
+    for (i = 0; i < length; i++) {
+        sendWirelessUart(buf[i]);
+    }
+#endif
+
+}
+
+#endif
 
 //  Main Core Routine
 int main()
@@ -103,7 +151,12 @@ int main()
 
     //uartCtrl::getInstance(0)->setBaudRate(16600);
     uartCtrl::getInstance(0)->setBaudRate(115200);
+
+#ifdef WIRELESS_MODE_LBUS
     uartCtrl::getInstance(1)->setBaudRate(19200);
+#else
+    uartCtrl::getInstance(1)->setBaudRate(115200);
+#endif
 
     stdio_init_all();
 
@@ -142,12 +195,18 @@ int main()
     uartCtrl::getInstance(0)->setRecvCallback(wiredRecv);
     uartCtrl::getInstance(1)->setRecvCallback(wirelessRecv);
     //loconetPacketRouter::setSender(sendWiredUart);
-    loconetPacketRouter::setSender(sendWirelessUart);
+    //loconetPacketRouter::setSender(sendWirelessUart);
+
+#ifdef ENABLE_LBUS
+    loconetPacketRouter::setMultidataSender(sendLBUScommand);
+#endif
 
     mt40busCtrl::setSender(sendWiredUart);
     mt40busCtrl::setCarrierSenseFunc(wiredCarrierSense);
 
-    mt40busCtrl::recvObj[0].receivedEchoCb(wiredRecvToUSBecho);
+    mt40busCtrl::recvObj[0].receivedEchoCb(wiredRecvEchoOtherPort);
+    mt40busCtrl::recvObj[1].receivedEchoCb(wirelessRecvEchoOtherPort);
+    mt40busCtrl::recvObj[2].receivedEchoCb(usbRecvEchoOtherPort);
 
     currentMonitor::init();
     voltageMonitor::init();
