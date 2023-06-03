@@ -322,10 +322,10 @@ void mt40busCtrl::execCmdTO(uint32_t *args, uint8_t argCount)
 
     if (args[1] == 1) {
         // Closed
-        accessoryCtrl::sendAccessoryPacket(addr, true);
+        accessoryCtrl::sendAccessoryPacket(addr, false);
     } else if (args[1] == 0) {
         // Thrown
-        accessoryCtrl::sendAccessoryPacket(addr, false);
+        accessoryCtrl::sendAccessoryPacket(addr, true);
     }
 }
 
