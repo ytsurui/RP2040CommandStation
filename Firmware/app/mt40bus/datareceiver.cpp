@@ -115,6 +115,8 @@ void mt40busCtrl::execPacket()
     uint8_t LBUSrecvDatas[32];
     uint8_t LBUSgetpos;
 
+    bool localPacket = false;
+
     // Parse
     //if (execData.Buf[0] != '(' && execData.Buf[0] != '{') {
     //    return;
@@ -153,6 +155,10 @@ void mt40busCtrl::execPacket()
                         mode = EXEC_PACKET_MODE_ARGS;
                     }
                     argTable[0] = 0;
+
+                    if (execData.Buf[i] == '{') {
+                        localPacket = true;
+                    }
                     break;
                 }
                 //printf("cmdData: %d, data: %d\n", cmdData, execData.Buf[i]);
@@ -169,6 +175,7 @@ void mt40busCtrl::execPacket()
                         argTable[argIndex] = 0;
                         break;
                     case '}':
+                        localPacket = true;
                     case ')':
                         // Command END
                         cmdExitFlag = true;
@@ -201,6 +208,7 @@ void mt40busCtrl::execPacket()
             case EXEC_PACKET_MODE_LBUS:
                 switch (execData.Buf[i]) {
                     case '}':
+                        localPacket = true;
                     case ')':
                         // Command END
                         cmdExitFlag = true;
