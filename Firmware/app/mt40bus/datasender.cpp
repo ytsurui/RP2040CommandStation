@@ -99,6 +99,24 @@ void mt40busCtrl::encodeNumToASCIIoct(uint32_t src, uint8_t *dest, uint8_t *leng
 {
     uint8_t pos = 0;
 
+    if (src >= 100000000) {
+        dest[pos] = '0' + (uint8_t)(src / 1000000);
+        src = src % 100000000;
+        pos++;
+    }
+
+    if (src >= 10000000) {
+        dest[pos] = '0' + (uint8_t)(src / 10000000);
+        src = src % 10000000;
+        pos++;
+    }
+
+    if (src >= 1000000) {
+        dest[pos] = '0' + (uint8_t)(src / 1000000);
+        src = src % 1000000;
+        pos++;
+    }
+
     if (src >= 100000) {
         dest[pos] = '0' + (uint8_t)(src / 100000);
         src = src % 100000;
