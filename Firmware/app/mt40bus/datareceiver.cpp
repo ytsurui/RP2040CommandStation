@@ -144,7 +144,7 @@ void mt40busCtrl::execPacket()
 
         switch (mode) {
             case EXEC_PACKET_MODE_CMD:    
-                if (i > 3) return;
+                if (i > 4) return;
                 if (execData.Buf[i] == '(' || execData.Buf[i] == '{') {
                     cmdChkFlag = true;
                     if (cmdData == 'LBUS') {
