@@ -415,10 +415,10 @@ void mt40busCtrl::execCmdTOS(uint32_t *args, uint8_t argCount)
         respArgs[0] = args[0];
         if (accessoryCtrl::getAccessoryStat(addr)) {
             // Closed
-            respArgs[1] = 1;
+            respArgs[1] = 0;
         } else {
             // Thrown
-            respArgs[1] = 0;
+            respArgs[1] = 1;
         }
 
         sendCmd('TOS', respArgs, 2);
