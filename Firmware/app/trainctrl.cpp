@@ -327,7 +327,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
             smallSendCount = trainData.FuncGroup3.sendcount;
         }
     }
-
+    /*
     if (trainData.FuncGroup4.enable)
     {
         if (appendWaitCount > 0)
@@ -369,8 +369,36 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
             smallSendCount = trainData.FuncGroup5.sendcount;
         }
     }
+    */
+
+    funcSendStub(&trainData.FuncGroup4, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F13_F20);
+    funcSendStub(&trainData.FuncGroup5, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F20_F28);
+    funcSendStub(&trainData.FuncGroup6, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F29_F36);
+    funcSendStub(&trainData.FuncGroup7, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F37_F44);
+    funcSendStub(&trainData.FuncGroup8, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F45_F52);
+    funcSendStub(&trainData.FuncGroup9, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F53_F60);
+    funcSendStub(&trainData.FuncGroup10, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F61_F68);
 
     return (smallSendCount);
+}
+
+void trainInfo::funcSendStub(trainDataInfo *fg, uint16_t appendWaitCount, uint16_t *smallSendCount, uint8_t funcGroup)
+{
+    if (fg->enable) {
+        if (appendWaitCount > 0) {
+            fg->sendcount = appendWaitCount;
+        }
+        fg->sendcount++;
+        if (fg->sendcount > PACKET_SEND_INTERVAL) {
+            if (trainpacket::sendExternalFuncPacket(addr, funcGroup, fg->data1)) {
+                fg->sendcount = 0;
+            }
+        }
+
+        if (*smallSendCount > fg->sendcount) {
+            *smallSendCount = fg->sendcount;
+        }
+    }
 }
 
 uint16_t trainInfo::getAddr(void)
@@ -501,6 +529,51 @@ bool trainInfo::setFuncG5(uint8_t data)
     return true;
 }
 
+bool trainInfo::setFuncG6(uint8_t data)
+{
+    trainData.FuncGroup6.enable = true;
+    trainData.FuncGroup6.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
+bool trainInfo::setFuncG7(uint8_t data)
+{
+    trainData.FuncGroup7.enable = true;
+    trainData.FuncGroup7.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
+bool trainInfo::setFuncG8(uint8_t data)
+{
+    trainData.FuncGroup8.enable = true;
+    trainData.FuncGroup8.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
+bool trainInfo::setFuncG9(uint8_t data)
+{
+    trainData.FuncGroup9.enable = true;
+    trainData.FuncGroup9.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
+bool trainInfo::setFuncG10(uint8_t data)
+{
+    trainData.FuncGroup10.enable = true;
+    trainData.FuncGroup10.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
 uint8_t trainInfo::getFuncG1(void)
 {
     return (trainData.FuncGroup1.data1);
@@ -524,6 +597,31 @@ uint8_t trainInfo::getFuncG4(void)
 uint8_t trainInfo::getFuncG5(void)
 {
     return (trainData.FuncGroup5.data1);
+}
+
+uint8_t trainInfo::getFuncG6(void)
+{
+    return (trainData.FuncGroup6.data1);
+}
+
+uint8_t trainInfo::getFuncG7(void)
+{
+    return (trainData.FuncGroup7.data1);
+}
+
+uint8_t trainInfo::getFuncG8(void)
+{
+    return (trainData.FuncGroup8.data1);
+}
+
+uint8_t trainInfo::getFuncG9(void)
+{
+    return (trainData.FuncGroup9.data1);
+}
+
+uint8_t trainInfo::getFuncG10(void)
+{
+    return (trainData.FuncGroup10.data1);
 }
 
 uint8_t trainInfo::getDirFlag(void)

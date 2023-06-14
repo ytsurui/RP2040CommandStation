@@ -234,8 +234,8 @@ bool trainpacket::sendFuncGroupPacket(uint16_t trainAddr, uint8_t funcGroup, uin
 
 /*
  *  sendTrainExternalFuncPacket
- *      Send F13-F28 Packet
- *      FuncGroup: Select F13-F20 / F21-F28
+ *      Send F13-F68 Packet
+ *      FuncGroup: Select F13-F20 / F21-F28 / F29-F36 / F37-F44 / F45-F52 / F53-F60 / F61-F68
  *      FuncInfo: Function Status Mask
  */
 bool trainpacket::sendExternalFuncPacket(uint16_t trainAddr, uint8_t funcGroup, uint8_t funcInfo)
@@ -271,6 +271,31 @@ bool trainpacket::sendExternalFuncPacket(uint16_t trainAddr, uint8_t funcGroup, 
     {
         packet[pPos] = 0b11011111;
         packetType = 5;
+    }
+    else if (funcGroup == TRAIN_FUNC_EXTERNAL_F29_F36)
+    {
+        packet[pPos] = 0b11011000;
+        packetType = 6;
+    }
+    else if (funcGroup == TRAIN_FUNC_EXTERNAL_F37_F44)
+    {
+        packet[pPos] = 0b11011001;
+        packetType = 7;
+    }
+    else if (funcGroup == TRAIN_FUNC_EXTERNAL_F45_F52)
+    {
+        packet[pPos] = 0b11011010;
+        packetType = 8;
+    }
+    else if (funcGroup == TRAIN_FUNC_EXTERNAL_F53_F60)
+    {
+        packet[pPos] = 0b11011011;
+        packetType = 9;
+    }
+    else if (funcGroup == TRAIN_FUNC_EXTERNAL_F61_F68)
+    {
+        packet[pPos] = 0b11011100;
+        packetType = 10;
     }
     else
     {

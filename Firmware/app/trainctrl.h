@@ -24,6 +24,10 @@ public:
     bool setFuncG4(uint8_t data);
     bool setFuncG5(uint8_t data);
     bool setFuncG6(uint8_t data);
+    bool setFuncG7(uint8_t data);
+    bool setFuncG8(uint8_t data);
+    bool setFuncG9(uint8_t data);
+    bool setFuncG10(uint8_t data);
 
     bool getSpeedType(uint8_t *spd, uint8_t *spdType);
     uint8_t getFuncG1(void);
@@ -32,6 +36,10 @@ public:
     uint8_t getFuncG4(void);
     uint8_t getFuncG5(void);
     uint8_t getFuncG6(void);
+    uint8_t getFuncG7(void);
+    uint8_t getFuncG8(void);
+    uint8_t getFuncG9(void);
+    uint8_t getFuncG10(void);
 
     uint8_t getDirFlag(void);
     void setDirFlag(uint8_t dir);
@@ -55,7 +63,11 @@ private:
         trainDataInfo FuncGroup3; // F9-F12
         trainDataInfo FuncGroup4; // F13-F20
         trainDataInfo FuncGroup5; // F21-F28
-        trainDataInfo FuncGroup6; // F29-F32
+        trainDataInfo FuncGroup6; // F29-F36
+        trainDataInfo FuncGroup7; // F37-F44
+        trainDataInfo FuncGroup8; // F45-F52
+        trainDataInfo FuncGroup9; // F53-F60
+        trainDataInfo FuncGroup10; // F61-F68
     } trainCtrlInfo;
 
     uint16_t addr;
@@ -65,6 +77,8 @@ private:
 
     trainCtrlInfo trainData;
     void taskStub(trainDataInfo targetData);
+
+    void funcSendStub(trainDataInfo *fg, uint16_t appendWaitCount, uint16_t *smallSendCount, uint8_t funcGroup);
 };
 
 class trainctrl

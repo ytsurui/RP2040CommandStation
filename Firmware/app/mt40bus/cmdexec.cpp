@@ -190,6 +190,56 @@ void mt40busCtrl::execCmdFN(uint32_t *args, uint8_t argCount)
             funcData |= funcMask;
             trainCtrlObj.train->setFuncG5(funcData);
         }
+    } else if (args[1] <= 36) {
+        // Func Group 6 (29-36)
+        funcMask = 0x01 << (args[1] - 29);
+        funcData = trainCtrlObj.train->getFuncG6();
+        if (args[2] == 0) {
+            funcData &= ~funcMask;
+        } else {
+            funcData |= funcMask;
+        }
+        trainCtrlObj.train->setFuncG6(funcData);
+    } else if (args[1] <= 44) {
+        // Func Group 7 (37-44)
+        funcMask = 0x01 << (args[1] - 37);
+        funcData = trainCtrlObj.train->getFuncG7();
+        if (args[2] == 0) {
+            funcData &= ~funcMask;
+        } else {
+            funcData |= funcMask;
+        }
+        trainCtrlObj.train->setFuncG7(funcData);
+    } else if (args[2] <= 52) {
+        // Func Group 8 (45-52)
+        funcMask = 0x01 << (args[1] - 45);
+        funcData = trainCtrlObj.train->getFuncG8();
+        if (args[2] == 0) {
+            funcData &= ~funcMask;
+        } else {
+            funcData |= funcMask;
+        }
+        trainCtrlObj.train->setFuncG8(funcData);
+    } else if (args[2] <= 60) {
+        // Func Group 9 (53-60)
+        funcMask = 0x01 << (args[1] - 53);
+        funcData = trainCtrlObj.train->getFuncG9();
+        if (args[2] == 0) {
+            funcData &= ~funcMask;
+        } else {
+            funcData |= funcMask;
+        }
+        trainCtrlObj.train->setFuncG9(funcData);
+    } else if (args[2] <= 68) {
+        // Func Group 10 (61-68)
+        funcMask = 0x01 << (args[1] - 61);
+        funcData = trainCtrlObj.train->getFuncG10();
+        if (args[2] == 0) {
+            funcData &= ~funcMask;
+        } else {
+            funcData |= funcMask;
+        }
+        trainCtrlObj.train->setFuncG10(funcData);
     }
 }
 
@@ -234,6 +284,26 @@ void mt40busCtrl::execCmdFNS(uint32_t *args, uint8_t argCount)
             case 4:
                 // Group4 (F21-F28)
                 respArgs[2] = trainCtrlObj.train->getFuncG5();
+                break;
+            case 5:
+                // Group5 (F29-F36)
+                respArgs[2] = trainCtrlObj.train->getFuncG6();
+                break;
+            case 6:
+                // Group6 (F37-F44)
+                respArgs[2] = trainCtrlObj.train->getFuncG7();
+                break;
+            case 7:
+                // Group7 (F45-F52)
+                respArgs[2] = trainCtrlObj.train->getFuncG8();
+                break;
+            case 8:
+                // Group8 (F53-F60)
+                respArgs[2] = trainCtrlObj.train->getFuncG9();
+                break;
+            case 9:
+                // Group9 (F61-F68)
+                respArgs[2] = trainCtrlObj.train->getFuncG10();
                 break;
             default:
                 return;
