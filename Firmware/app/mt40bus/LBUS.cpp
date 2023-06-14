@@ -61,6 +61,7 @@ void mt40busCtrl::sendLBUSdata(uint8_t *packet, uint8_t length)
 #else
     sendData[byteLength] = ')';
 #endif
+    byteLength++;
 
     sendData[byteLength] = '\r';
     byteLength++;
