@@ -301,6 +301,9 @@ void mt40busCtrl::execPacket()
             // CommandStation Power Status
             execCmdCPS(argTable, argIndex);
             break;
+        default:
+            printf("unknown packet: cmdData=%s\n", cmdData);
+            break;
     }
 
     for (i = 0; i < MT40BUS_BUF_LENGTH; i++) {
