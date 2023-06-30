@@ -188,6 +188,11 @@ void trainInfo::init(void)
     trainData.FuncGroup3.enable = false;
     trainData.FuncGroup4.enable = false;
     trainData.FuncGroup5.enable = false;
+    trainData.FuncGroup6.enable = false;
+    trainData.FuncGroup7.enable = false;
+    trainData.FuncGroup8.enable = false;
+    trainData.FuncGroup9.enable = false;
+    trainData.FuncGroup10.enable = false;
 }
 
 uint16_t trainInfo::task(uint16_t appendWaitCount)
