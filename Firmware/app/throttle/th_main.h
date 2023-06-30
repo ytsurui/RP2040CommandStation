@@ -12,6 +12,9 @@ public:
     static void dispEvent();
     static void dispTerminate();
 
+    static void bootVersionInfo();
+    static uint8_t bootMsgShowTimming();
+
 private:
     static throttleAppTrainCtrl trainCtrlObj[2];
 
@@ -30,6 +33,8 @@ private:
     static uint16_t showPageID;
 
     static uint8_t eventCount;
+
+    static uint32_t bootMsgCounter;
 };
 
 #define PAGE_ID_TOP 0x0000

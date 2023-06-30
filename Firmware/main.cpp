@@ -129,6 +129,8 @@ void sendLBUScommand(uint8_t *buf, uint8_t length)
 {
     uint8_t i;
 
+    //printf("sendLBUScommand called: data=%s, length=%d\n", buf, length);
+
     mt40busCtrl::sendLBUSdata(buf, length);
 
 #ifdef WIRELESS_MODE_LBUS
@@ -145,6 +147,8 @@ void sendLBUScommand(uint8_t *buf, uint8_t length)
 int main()
 {
     uint8_t adcEventCounter = 0;
+    uint8_t bootEventID;
+    uint32_t bootEventCount;
 
     // uartTest::init();
     uartCtrl::globalInit();
@@ -187,29 +191,71 @@ int main()
 
     eventtimer::init();
 
-    loconetPacketRouter::init();
+    throttleAppMain::bootVersionInfo();
+    bootEventCount = 0;
+    
+    while(1) {
+        if (eventtimer::checkMS()) {
+            bootEventID = throttleAppMain::bootMsgShowTimming();
+            if (bootEventID == 0xFF) {
+                break;
+            }
+
+            if (bootEventID == 1) {
+                throttleAppMain::bootVersionInfo();
+            }
+            if (bootEventCount <= 2) {
+                bootEventCount++;
+            }
+
+            if (bootEventCount == 1) {
+                loconetPacketRouter::init();
+
+                uartCtrl::getInstance(0)->setRecvCallback(wiredRecv);
+                uartCtrl::getInstance(1)->setRecvCallback(wirelessRecv);
+
+#ifdef ENABLE_LBUS
+                loconetPacketRouter::setMultidataSender(sendLBUScommand);
+                mt40busCtrl::setLBUScommandReceiver(loconetPacketRouter::recv);
+#endif
+
+                mt40busCtrl::setSender(sendWiredUart);
+                mt40busCtrl::setCarrierSenseFunc(wiredCarrierSense);
+
+                mt40busCtrl::recvObj[0].receivedEchoCb(wiredRecvEchoOtherPort);
+                mt40busCtrl::recvObj[1].receivedEchoCb(wirelessRecvEchoOtherPort);
+                mt40busCtrl::recvObj[2].receivedEchoCb(usbRecvEchoOtherPort);
+
+                currentMonitor::init();
+                voltageMonitor::init();
+            }
+        }
+    }
+
+//    loconetPacketRouter::init();
     // uartTest::setCallback(loconetPacketRouter::recv);
     // loconetPacketRouter::setSender(uartTest::send);
 
     // uartCtrl::getInstance(0)->setRecvCallback(loconetPacketRouter::recv);
-    uartCtrl::getInstance(0)->setRecvCallback(wiredRecv);
-    uartCtrl::getInstance(1)->setRecvCallback(wirelessRecv);
+//    uartCtrl::getInstance(0)->setRecvCallback(wiredRecv);
+//    uartCtrl::getInstance(1)->setRecvCallback(wirelessRecv);
     //loconetPacketRouter::setSender(sendWiredUart);
     //loconetPacketRouter::setSender(sendWirelessUart);
 
-#ifdef ENABLE_LBUS
-    loconetPacketRouter::setMultidataSender(sendLBUScommand);
-#endif
+//#ifdef ENABLE_LBUS
+//    loconetPacketRouter::setMultidataSender(sendLBUScommand);
+//    mt40busCtrl::setLBUScommandReceiver(loconetPacketRouter::recv);
+//#endif
 
-    mt40busCtrl::setSender(sendWiredUart);
-    mt40busCtrl::setCarrierSenseFunc(wiredCarrierSense);
+//    mt40busCtrl::setSender(sendWiredUart);
+//    mt40busCtrl::setCarrierSenseFunc(wiredCarrierSense);
 
-    mt40busCtrl::recvObj[0].receivedEchoCb(wiredRecvEchoOtherPort);
-    mt40busCtrl::recvObj[1].receivedEchoCb(wirelessRecvEchoOtherPort);
-    mt40busCtrl::recvObj[2].receivedEchoCb(usbRecvEchoOtherPort);
+//    mt40busCtrl::recvObj[0].receivedEchoCb(wiredRecvEchoOtherPort);
+//    mt40busCtrl::recvObj[1].receivedEchoCb(wirelessRecvEchoOtherPort);
+//    mt40busCtrl::recvObj[2].receivedEchoCb(usbRecvEchoOtherPort);
 
-    currentMonitor::init();
-    voltageMonitor::init();
+//    currentMonitor::init();
+//    voltageMonitor::init();
 
     multicore_launch_core1(subCoreMain);
 

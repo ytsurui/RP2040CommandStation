@@ -55,6 +55,7 @@ add_executable(
     peripheral/uarttest.cpp
 
     app/throttle/th_main.cpp
+    app/throttle/th_boot_versioninfo.cpp
     app/throttle/th_top.cpp
     app/throttle/th_trainctrl.cpp
     app/throttle/th_switchctrl.cpp
