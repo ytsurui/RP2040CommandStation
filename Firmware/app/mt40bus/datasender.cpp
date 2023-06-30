@@ -32,9 +32,11 @@ void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
     if (carrierSenseCb.assigned) {
         //printf("carrier-sense...\n");
         sleep_ms(5);
-        while (carrierSenseCb.func()) {
+        //while (!carrierSenseCb.func()) {
+            //sleep_us(10);
             //printf("cb-wait\n");
-        }
+        //    sleep_ms(7);
+        //}
     }
 
     //printf("data send cmd: %d\n", cmd);

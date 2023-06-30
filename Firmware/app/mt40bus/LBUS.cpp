@@ -2,6 +2,8 @@
 #include "pico/stdlib.h"
 #include "mt40bus.h"
 
+#include <stdio.h>
+
 #ifdef ENABLE_LBUS
 
 mt40busCtrl::cb_info mt40busCtrl::LBUSrecvCb;
@@ -29,9 +31,11 @@ void mt40busCtrl::sendLBUSdata(uint8_t *packet, uint8_t length)
     if (carrierSenseCb.assigned) {
         //printf("carrier-sense...\n");
         sleep_ms(5);
-        while (carrierSenseCb.func()) {
+        //while (!carrierSenseCb.func()) {
+            //sleep_us(10);
             //printf("cb-wait\n");
-        }
+        //    sleep_ms(7);
+        //}
     }
 
     sendData[0] = 'L';
