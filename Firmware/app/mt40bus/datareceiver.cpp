@@ -23,6 +23,9 @@ void mt40busCtrl::init()
     recvObj[0].recvData.length = 0;
     recvObj[1].recvData.length = 0;
     recvObj[2].recvData.length = 0;
+    recvObj[0].privatePacket = false;
+    recvObj[1].privatePacket = false;
+    recvObj[2].privatePacket = false;
 }
 
 void mt40busCtrl::recv(uint8_t rData)
@@ -34,6 +37,10 @@ void mt40busCtrl::recv(uint8_t rData)
         //printf("packet ignore\n");
         return;
     }
+    if ((rData == '{') || (rData == '}')) {
+        // Private Packet
+        privatePacket = true;
+    }
     if (rData == '\r') {
         // Data End
         //printf("data end\n");
@@ -41,11 +48,14 @@ void mt40busCtrl::recv(uint8_t rData)
         recvData.length = 0;
 
         if (execData.length == 0) {
+            privatePacket = false;
             return;
         }
 
         // Execution
         if (execData.length < 4) {
+            execData.length = 0;
+            privatePacket = false;
             return;
         }
         
@@ -55,15 +65,17 @@ void mt40busCtrl::recv(uint8_t rData)
             uint8_t i;
 
             for (i = 0; i < execData.length; i++) {
-                recvedEchoCb.func(execData.Buf[i]);
+                recvedEchoCb.func(execData.Buf[i], privatePacket);
             }
 
-            recvedEchoCb.func('\r');
-            recvedEchoCb.func('\n');
+            recvedEchoCb.func('\r', privatePacket);
+            recvedEchoCb.func('\n', privatePacket);
         }
 
         execPacket();
         //printf("data exec\n");
+        execData.length = 0;
+        privatePacket = false;
         return;
     }
 
@@ -76,7 +88,7 @@ void mt40busCtrl::recv(uint8_t rData)
     recvData.length++;
 }
 
-void mt40busCtrl::receivedEchoCb(void (*func)(uint8_t)) {
+void mt40busCtrl::receivedEchoCb(void (*func)(uint8_t, bool)) {
     recvedEchoCb.func = func;
     recvedEchoCb.assigned = true;
 }

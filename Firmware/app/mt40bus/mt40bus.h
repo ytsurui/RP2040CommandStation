@@ -13,7 +13,7 @@ class mt40busCtrl
         static void eventMS(void);
 
         void recv(uint8_t rData);
-        void receivedEchoCb(void (*func)(uint8_t));
+        void receivedEchoCb(void (*func)(uint8_t, bool));
 
         static void setSender(void (*method)(uint8_t));
         static void sendCmd(uint32_t cmd, uint32_t *args, uint8_t length);
@@ -32,6 +32,12 @@ class mt40busCtrl
 #endif
 
     private:
+    
+        typedef struct
+        {
+            void (*func)(uint8_t, bool);
+            bool assigned;
+        } cb_int_bool;
 
         typedef struct
         {
@@ -41,7 +47,7 @@ class mt40busCtrl
 
         static cb_info senderCb;
 
-        cb_info recvedEchoCb;
+        cb_int_bool recvedEchoCb;
 
         typedef struct
         {
@@ -50,6 +56,9 @@ class mt40busCtrl
         } cb_bool_info;
 
         static cb_bool_info carrierSenseCb;
+
+
+
 
 #ifdef ENABLE_LBUS
         static cb_info LBUSrecvCb;
@@ -63,6 +72,8 @@ class mt40busCtrl
         } packetBuf;
 
         packetBuf recvData;
+        bool privatePacket;
+
         static packetBuf execData;
 
         static uint32_t lastSendRecvCount;

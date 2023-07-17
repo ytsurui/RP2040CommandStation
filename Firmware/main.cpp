@@ -97,28 +97,34 @@ void wiredRecvToUSBecho(uint8_t data)
     printf("%c", data);
 }
 
-void wiredRecvEchoOtherPort(uint8_t data)
+void wiredRecvEchoOtherPort(uint8_t data, bool privatePacket)
 {
     printf("%c", data);
 #ifndef WIRELESS_MODE_LBUS
     // Wired to Wireless bridge
-    uartCtrl::getInstance(1)->send(data);
+    if (!privatePacket) {
+        uartCtrl::getInstance(1)->send(data);
+    }
 #endif
 }
 
-void wirelessRecvEchoOtherPort(uint8_t data)
+void wirelessRecvEchoOtherPort(uint8_t data, bool privatePacket)
 {
     printf("%c", data);
-    uartCtrl::getInstance(0)->send(data);
+    if (!privatePacket) {
+        uartCtrl::getInstance(0)->send(data);
+    }
 }
 
-void usbRecvEchoOtherPort(uint8_t data)
+void usbRecvEchoOtherPort(uint8_t data, bool privatePacket)
 {
-    uartCtrl::getInstance(0)->send(data);
+    if (!privatePacket) {
+        uartCtrl::getInstance(0)->send(data);
 #ifndef WIRELESS_MODE_LBUS
-    // Wired to Wireless bridge
-    uartCtrl::getInstance(1)->send(data);
+        // Wired to Wireless bridge
+        uartCtrl::getInstance(1)->send(data);
 #endif
+    }
 }
 
 void recvUSBserialChar(void)
