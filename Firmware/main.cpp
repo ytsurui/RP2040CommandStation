@@ -55,6 +55,17 @@ void sendWiredUart(uint8_t data)
     //printf("%c", data);
 }
 
+void sendMT40BUSdata(uint8_t data)
+{
+    commLED::set();
+    uartCtrl::getInstance(0)->send(data);
+
+#ifndef WIRELESS_MODE_LBUS
+    uartCtrl::getInstance(1)->send(data);
+#endif
+    printf("%c", data);
+}
+
 void sendWirelessUart(uint8_t data)
 {
     uartCtrl::getInstance(1)->send(data);
@@ -219,7 +230,8 @@ int main()
                 mt40busCtrl::setLBUScommandReceiver(loconetPacketRouter::recv);
 #endif
 
-                mt40busCtrl::setSender(sendWiredUart);
+                //mt40busCtrl::setSender(sendWiredUart);
+                mt40busCtrl::setSender(sendMT40BUSdata);
                 mt40busCtrl::setCarrierSenseFunc(wiredCarrierSense);
 
                 mt40busCtrl::recvObj[0].receivedEchoCb(wiredRecvEchoOtherPort);
