@@ -15,6 +15,8 @@ public:
     bool setAddr(uint16_t newAddr);
     void clearAddr(void);
 
+    bool setRobotSpeed(uint8_t dir, uint8_t spd);   // ロボットの速度制限は0から100(%)で行われる
+
     bool setSpeed14(uint8_t dir, uint8_t spd);
     bool setSpeed28(uint8_t dir, uint8_t spd);
     bool setSpeed128(uint8_t dir, uint8_t spd);
@@ -44,7 +46,15 @@ public:
     uint8_t getDirFlag(void);
     void setDirFlag(uint8_t dir);
 
+    bool setRobotDirection(uint8_t dir);
+    bool setRobotMaxSpd(uint8_t spd);
+    uint8_t getRobotDirection();
+    uint8_t getRobotMaxSpd();
+
 private:
+    uint8_t robotDir;
+    uint8_t robotSpd;
+
     typedef struct
     {
         bool enable;

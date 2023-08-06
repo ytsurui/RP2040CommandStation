@@ -103,13 +103,21 @@ class mt40busCtrl
         static void execCmdDI(uint32_t *args, uint8_t argCount);    // Train Direction
         static void execCmdDIS(uint32_t *args, uint8_t argCount);   // Train Direction Status
 
+        static void execCmdRDI(uint32_t *args, uint8_t argCount);   // RootUser/Robot Train Direction
+        static void execCmdRDIT(uint32_t *args, uint8_t argCount);  // RootUser/Robot Train Direction Toggle
+        static void execCmdRDIS(uint32_t *args, uint8_t argCount);  // RootUser/Robot Train Direction Status
+
         // Train Function
         static void execCmdFN(uint32_t *args, uint8_t argCount);    // Train Function
         static void execCmdFNS(uint32_t *args, uint8_t argCount);   // Train Function Status
 
+
         // Train Speed
         static void execCmdSP(uint32_t *args, uint8_t argCount);    // Set Train Speed
         static void execCmdSPS(uint32_t *args, uint8_t argCount);   // Get Train Speed Status
+
+        static void execCmdRSP(uint32_t *args, uint8_t argCount);   // RootUser/Robot Set Train Speed
+        static void execCmdRSPS(uint32_t *args, uint8_t argCount);  // RootUser/Robot Get Train Speed Status
 
         // Turnout(Accessory) Operation
         static void execCmdTO(uint32_t *args, uint8_t argCount);    // Turnout Operation

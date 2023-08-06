@@ -193,6 +193,9 @@ void trainInfo::init(void)
     trainData.FuncGroup8.enable = false;
     trainData.FuncGroup9.enable = false;
     trainData.FuncGroup10.enable = false;
+
+    robotDir = 0;   // NONE (1: toggle)
+    robotSpd = 100;
 }
 
 uint16_t trainInfo::task(uint16_t appendWaitCount)
@@ -419,16 +422,43 @@ bool trainInfo::setAddr(uint16_t newAddr)
     }
     addr = newAddr;
     lastCtrlCounter = 0;
+    
+    robotDir = 0;   // NONE (1: toggle)
+    robotSpd = 100;
+
     return true;
 }
 
 void trainInfo::clearAddr(void)
 {
     init();
+
+    robotDir = 0;   // NONE (1: toggle)
+    robotSpd = 100;
 }
 
 bool trainInfo::setSpeed14(uint8_t dir, uint8_t spd)
 {
+    if (robotDir == 1) {
+        // Robot Direction Control
+        if (dir == 1) {
+            dir = 2;
+        } else {
+            dir = 1;
+        }
+    }
+
+    
+    if (robotSpd < 100) {
+        if (robotSpd = 0) {
+            spd = 0;
+        } else {
+            spd = spd * robotSpd / 100;
+        }
+    }
+    
+
+
     trainData.speed14.enable = true;
     trainData.speed128.enable = false;
     trainData.speed28.enable = false;
@@ -442,6 +472,25 @@ bool trainInfo::setSpeed14(uint8_t dir, uint8_t spd)
 
 bool trainInfo::setSpeed28(uint8_t dir, uint8_t spd)
 {
+    if (robotDir == 1) {
+        // Robot Direction Control
+        if (dir == 1) {
+            dir = 2;
+        } else {
+            dir = 1;
+        }
+    }
+
+    
+    if (robotSpd < 100) {
+        if (robotSpd = 0) {
+            spd = 0;
+        } else {
+            spd = spd * robotSpd / 100;
+        }
+    }
+    
+
     trainData.speed28.enable = true;
     trainData.speed14.enable = false;
     trainData.speed128.enable = false;
@@ -455,6 +504,25 @@ bool trainInfo::setSpeed28(uint8_t dir, uint8_t spd)
 
 bool trainInfo::setSpeed128(uint8_t dir, uint8_t spd)
 {
+    if (robotDir == 1) {
+        // Robot Direction Control
+        if (dir == 1) {
+            dir = 2;
+        } else {
+            dir = 1;
+        }
+    }
+
+    
+    if (robotSpd < 100) {
+        if (robotSpd = 0) {
+            spd = 0;
+        } else {
+            spd = spd * robotSpd / 100;
+        }
+    }
+    
+
     // printf("trainInfo::setSpeed128 dir=%d, spd=%d\n", dir, spd);
     trainData.speed128.enable = true;
     trainData.speed14.enable = false;
@@ -637,4 +705,30 @@ uint8_t trainInfo::getDirFlag(void)
 void trainInfo::setDirFlag(uint8_t dir)
 {
     directionFlag = dir;
+}
+
+bool trainInfo::setRobotDirection(uint8_t dir)
+{
+    if (dir >= 2) return false;
+
+    robotDir = dir;
+    return true;
+}
+
+bool trainInfo::setRobotMaxSpd(uint8_t spd)
+{
+    if (spd > 100)return false;
+
+    robotSpd = spd;
+    return true;
+}
+
+uint8_t trainInfo::getRobotDirection()
+{
+    return robotDir;
+}
+
+uint8_t trainInfo::getRobotMaxSpd()
+{
+    return robotSpd;
 }

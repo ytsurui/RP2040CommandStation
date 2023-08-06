@@ -313,6 +313,26 @@ void mt40busCtrl::execPacket()
             // CommandStation Power Status
             execCmdCPS(argTable, argIndex);
             break;
+        case 'RDI':
+            // Rootuser/Robot Direction Input
+            execCmdRDI(argTable, argIndex);
+            break;
+        case 'RDIT':
+            // Rootuser/Robot Direction Input Toggle
+            execCmdRDIT(argTable, argIndex);
+            break;
+        case 'RDIS':
+            // Rootuser/Robot Diretcion Status
+            execCmdRDIS(argTable, argIndex);
+            break;
+        case 'RSP':
+            //Rootuser/Robot Speed
+            execCmdRSP(argTable, argIndex);
+            break;
+        case 'RSPS':
+            //Rootuser/Robot Speed Status
+            execCmdRSPS(argTable, argIndex);
+            break;
         default:
             printf("unknown packet: cmdData=%s\n", cmdData);
             break;

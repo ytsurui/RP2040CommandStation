@@ -49,6 +49,7 @@ add_executable(
     app/mt40bus/datasender.cpp
     app/mt40bus/cmdexec.cpp
     app/mt40bus/LBUS.cpp
+    app/mt40bus/robotcmdexec.cpp
 
     app/trainctrl.cpp
 
