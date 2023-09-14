@@ -71,6 +71,7 @@ void loconetPacketRouter::recv(uint8_t packetByte)
             // exec
             packetExec();
         }
+        packetLength = 0;
     }
 }
 
@@ -81,12 +82,12 @@ void loconetPacketRouter::packetExec()
     if (packetLength == 0)
         return;
 
-    printf("recv: ");
-    for (i = 0; i <= packetLength; i++)
-    {
-        printf("%02X ", packetBuf[i]);
-    }
-    printf("\r\n");
+    //printf("recv: ");
+    //for (i = 0; i <= packetLength; i++)
+    //{
+    //    printf("%02X ", packetBuf[i]);
+    //}
+    //printf("\r\n");
 
     switch (packetBuf[0])
     {

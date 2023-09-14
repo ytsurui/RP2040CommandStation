@@ -105,3 +105,48 @@ void uartCtrl::setRecvCallback(void (*cb)(uint8_t))
 {
     recvCb = cb;
 }
+
+void uartCtrl::BusGPIOdir(uint8_t num, bool dir, bool pullup)
+{
+    uint8_t gpioNum;
+    if (num == 0) {
+        gpioNum = BUS_CTRL1_GPIO;
+    } else if (num == 1) {
+        gpioNum = BUS_CTRL2_GPIO;
+    } else {
+        return;
+    }
+
+    gpio_set_dir(gpioNum, dir);
+    if (!dir && pullup) {
+        gpio_pull_up(gpioNum);
+    } 
+}
+
+void uartCtrl::putBusGPIO(uint8_t num, bool value)
+{
+    uint8_t gpioNum;
+    if (num == 0) {
+        gpioNum = BUS_CTRL1_GPIO;
+    } else if (num == 1) {
+        gpioNum = BUS_CTRL2_GPIO;
+    } else {
+        return;
+    }
+
+    gpio_put(gpioNum, value);
+}
+
+bool uartCtrl::getBusGPIO(uint8_t num)
+{
+    uint8_t gpioNum;
+    if (num == 0) {
+        gpioNum = BUS_CTRL1_GPIO;
+    } else if (num == 1) {
+        gpioNum = BUS_CTRL2_GPIO;
+    } else {
+        return false;
+    }
+
+    return gpio_get(gpioNum);
+}

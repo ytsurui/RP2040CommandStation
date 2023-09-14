@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION 3.13)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
-
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
@@ -37,17 +36,27 @@ add_executable(
     app/trainpacket.cpp
     app/acc_ctrl.cpp
     app/progtrak.cpp
+
     app/loconet/packetRouter.cpp
     app/loconet/responser.cpp
     app/loconet/exec.cpp
     app/loconet/train_slot.cpp
     app/loconet/train_slot_global.cpp
 
+    app/mt40bus/event.cpp
+    app/mt40bus/comparestr.cpp
+    app/mt40bus/datareceiver.cpp
+    app/mt40bus/datasender.cpp
+    app/mt40bus/cmdexec.cpp
+    app/mt40bus/LBUS.cpp
+    app/mt40bus/robotcmdexec.cpp
+
     app/trainctrl.cpp
 
     peripheral/uarttest.cpp
 
     app/throttle/th_main.cpp
+    app/throttle/th_boot_versioninfo.cpp
     app/throttle/th_top.cpp
     app/throttle/th_trainctrl.cpp
     app/throttle/th_switchctrl.cpp

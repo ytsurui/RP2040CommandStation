@@ -185,6 +185,15 @@ void dccport::togglePowerStat(void)
     }
 }
 
+bool dccport::getPowerStat(void)
+{
+    if (powerStat == DCC_POWER_STAT_ON) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool dccport::dcc_railcom_cutout_running(void)
 {
     return execCutout;

@@ -16,7 +16,7 @@ void loconetPacketRouter::execLocoAdr()
     if (addr > 0)
     {
         slotID = loconetTrainSlot::getSlotID(addr);
-        printf("getSlotID: trainaddr=%d, slotID=%d\n", addr, slotID);
+        //printf("getSlotID: trainaddr=%d, slotID=%d\n", addr, slotID);
         if (slotID == 0xFF)
         {
             // New Slot

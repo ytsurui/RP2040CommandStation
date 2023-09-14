@@ -112,7 +112,7 @@ trainctrl::trainctrlresp trainctrl::selectNewTrain(uint16_t addr)
         {
             respData.enable = true;
             respData.train = &trainCtrlData[i];
-            printf("selectNewTrain: Get Exist TrainCtrlData: addr=%d, index=%d\n", addr, i);
+            //printf("selectNewTrain: Get Exist TrainCtrlData: addr=%d, index=%d\n", addr, i);
             return (respData);
         }
         else if (tempAddr == 0)
@@ -128,7 +128,7 @@ trainctrl::trainctrlresp trainctrl::selectNewTrain(uint16_t addr)
     {
         return (respData);
     }
-    printf("selectNewTrain: Get New TrainCtrlData: addr=%d, index=%d\n", addr, newSlotIndex);
+    //printf("selectNewTrain: Get New TrainCtrlData: addr=%d, index=%d\n", addr, newSlotIndex);
     trainCtrlData[newSlotIndex].setAddr(addr);
     respData.enable = true;
     respData.train = &trainCtrlData[newSlotIndex];
@@ -161,11 +161,25 @@ trainctrl::trainctrlresp trainctrl::getTrainCtrl(uint16_t addr)
     return respData;
 }
 
+trainctrl::trainctrlresp trainctrl::getTrainCtrlWithNewObj(uint16_t addr)
+{
+    trainctrlresp respData;
+
+    respData = getTrainCtrl(addr);
+    if (respData.enable) {
+        return respData;
+    }
+
+    respData = selectNewTrain(addr);
+    return respData;
+}
+
 void trainInfo::init(void)
 {
     // printf("trainInfo init: lastAddr=%d\n", addr);
     addr = 0;
     lastCtrlCounter = 0;
+    directionFlag = 1;  // FOR
     trainData.speed14.enable = false;
     trainData.speed28.enable = false;
     trainData.speed128.enable = false;
@@ -174,6 +188,14 @@ void trainInfo::init(void)
     trainData.FuncGroup3.enable = false;
     trainData.FuncGroup4.enable = false;
     trainData.FuncGroup5.enable = false;
+    trainData.FuncGroup6.enable = false;
+    trainData.FuncGroup7.enable = false;
+    trainData.FuncGroup8.enable = false;
+    trainData.FuncGroup9.enable = false;
+    trainData.FuncGroup10.enable = false;
+
+    robotDir = 0;   // NONE (1: toggle)
+    robotSpd = 100;
 }
 
 uint16_t trainInfo::task(uint16_t appendWaitCount)
@@ -313,7 +335,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
             smallSendCount = trainData.FuncGroup3.sendcount;
         }
     }
-
+    /*
     if (trainData.FuncGroup4.enable)
     {
         if (appendWaitCount > 0)
@@ -355,8 +377,36 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
             smallSendCount = trainData.FuncGroup5.sendcount;
         }
     }
+    */
+
+    funcSendStub(&trainData.FuncGroup4, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F13_F20);
+    funcSendStub(&trainData.FuncGroup5, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F20_F28);
+    funcSendStub(&trainData.FuncGroup6, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F29_F36);
+    funcSendStub(&trainData.FuncGroup7, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F37_F44);
+    funcSendStub(&trainData.FuncGroup8, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F45_F52);
+    funcSendStub(&trainData.FuncGroup9, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F53_F60);
+    funcSendStub(&trainData.FuncGroup10, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F61_F68);
 
     return (smallSendCount);
+}
+
+void trainInfo::funcSendStub(trainDataInfo *fg, uint16_t appendWaitCount, uint16_t *smallSendCount, uint8_t funcGroup)
+{
+    if (fg->enable) {
+        if (appendWaitCount > 0) {
+            fg->sendcount = appendWaitCount;
+        }
+        fg->sendcount++;
+        if (fg->sendcount > PACKET_SEND_INTERVAL) {
+            if (trainpacket::sendExternalFuncPacket(addr, funcGroup, fg->data1)) {
+                fg->sendcount = 0;
+            }
+        }
+
+        if (*smallSendCount > fg->sendcount) {
+            *smallSendCount = fg->sendcount;
+        }
+    }
 }
 
 uint16_t trainInfo::getAddr(void)
@@ -372,16 +422,43 @@ bool trainInfo::setAddr(uint16_t newAddr)
     }
     addr = newAddr;
     lastCtrlCounter = 0;
+    
+    robotDir = 0;   // NONE (1: toggle)
+    robotSpd = 100;
+
     return true;
 }
 
 void trainInfo::clearAddr(void)
 {
     init();
+
+    robotDir = 0;   // NONE (1: toggle)
+    robotSpd = 100;
 }
 
 bool trainInfo::setSpeed14(uint8_t dir, uint8_t spd)
 {
+    if (robotDir == 1) {
+        // Robot Direction Control
+        if (dir == 1) {
+            dir = 2;
+        } else {
+            dir = 1;
+        }
+    }
+
+    
+    if (robotSpd < 100) {
+        if (robotSpd = 0) {
+            spd = 0;
+        } else {
+            spd = spd * robotSpd / 100;
+        }
+    }
+    
+
+
     trainData.speed14.enable = true;
     trainData.speed128.enable = false;
     trainData.speed28.enable = false;
@@ -395,6 +472,25 @@ bool trainInfo::setSpeed14(uint8_t dir, uint8_t spd)
 
 bool trainInfo::setSpeed28(uint8_t dir, uint8_t spd)
 {
+    if (robotDir == 1) {
+        // Robot Direction Control
+        if (dir == 1) {
+            dir = 2;
+        } else {
+            dir = 1;
+        }
+    }
+
+    
+    if (robotSpd < 100) {
+        if (robotSpd = 0) {
+            spd = 0;
+        } else {
+            spd = spd * robotSpd / 100;
+        }
+    }
+    
+
     trainData.speed28.enable = true;
     trainData.speed14.enable = false;
     trainData.speed128.enable = false;
@@ -408,6 +504,25 @@ bool trainInfo::setSpeed28(uint8_t dir, uint8_t spd)
 
 bool trainInfo::setSpeed128(uint8_t dir, uint8_t spd)
 {
+    if (robotDir == 1) {
+        // Robot Direction Control
+        if (dir == 1) {
+            dir = 2;
+        } else {
+            dir = 1;
+        }
+    }
+
+    
+    if (robotSpd < 100) {
+        if (robotSpd = 0) {
+            spd = 0;
+        } else {
+            spd = spd * robotSpd / 100;
+        }
+    }
+    
+
     // printf("trainInfo::setSpeed128 dir=%d, spd=%d\n", dir, spd);
     trainData.speed128.enable = true;
     trainData.speed14.enable = false;
@@ -420,6 +535,25 @@ bool trainInfo::setSpeed128(uint8_t dir, uint8_t spd)
     // trainpacket::sendSpeed128Packet(addr, trainData.speed128.data1, trainData.speed128.data2);
     // gpio_put(0, true);
 
+    return true;
+}
+
+bool trainInfo::getSpeedType(uint8_t *spd, uint8_t *spdType)
+{
+    if (trainData.speed128.enable) {
+        *spd = trainData.speed128.data2;
+        *spdType = 2;
+    } else if (trainData.speed28.enable) {
+        *spd = trainData.speed28.data2;
+        *spdType = 1;
+    } else if (trainData.speed14.enable) {
+        *spd = trainData.speed14.data2;
+        *spdType = 0;
+    } else {
+        *spd = 0;
+        *spdType = 2;
+        return false;
+    }
     return true;
 }
 
@@ -468,6 +602,51 @@ bool trainInfo::setFuncG5(uint8_t data)
     return true;
 }
 
+bool trainInfo::setFuncG6(uint8_t data)
+{
+    trainData.FuncGroup6.enable = true;
+    trainData.FuncGroup6.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
+bool trainInfo::setFuncG7(uint8_t data)
+{
+    trainData.FuncGroup7.enable = true;
+    trainData.FuncGroup7.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
+bool trainInfo::setFuncG8(uint8_t data)
+{
+    trainData.FuncGroup8.enable = true;
+    trainData.FuncGroup8.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
+bool trainInfo::setFuncG9(uint8_t data)
+{
+    trainData.FuncGroup9.enable = true;
+    trainData.FuncGroup9.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
+bool trainInfo::setFuncG10(uint8_t data)
+{
+    trainData.FuncGroup10.enable = true;
+    trainData.FuncGroup10.data1 = data;
+    lastCtrlCounter = 0;
+
+    return true;
+}
+
 uint8_t trainInfo::getFuncG1(void)
 {
     return (trainData.FuncGroup1.data1);
@@ -491,4 +670,65 @@ uint8_t trainInfo::getFuncG4(void)
 uint8_t trainInfo::getFuncG5(void)
 {
     return (trainData.FuncGroup5.data1);
+}
+
+uint8_t trainInfo::getFuncG6(void)
+{
+    return (trainData.FuncGroup6.data1);
+}
+
+uint8_t trainInfo::getFuncG7(void)
+{
+    return (trainData.FuncGroup7.data1);
+}
+
+uint8_t trainInfo::getFuncG8(void)
+{
+    return (trainData.FuncGroup8.data1);
+}
+
+uint8_t trainInfo::getFuncG9(void)
+{
+    return (trainData.FuncGroup9.data1);
+}
+
+uint8_t trainInfo::getFuncG10(void)
+{
+    return (trainData.FuncGroup10.data1);
+}
+
+uint8_t trainInfo::getDirFlag(void)
+{
+    return directionFlag;
+}
+
+void trainInfo::setDirFlag(uint8_t dir)
+{
+    directionFlag = dir;
+}
+
+bool trainInfo::setRobotDirection(uint8_t dir)
+{
+    if (dir >= 2) return false;
+
+    robotDir = dir;
+    return true;
+}
+
+bool trainInfo::setRobotMaxSpd(uint8_t spd)
+{
+    if (spd > 100)return false;
+
+    robotSpd = spd;
+    return true;
+}
+
+uint8_t trainInfo::getRobotDirection()
+{
+    return robotDir;
+}
+
+uint8_t trainInfo::getRobotMaxSpd()
+{
+    return robotSpd;
 }

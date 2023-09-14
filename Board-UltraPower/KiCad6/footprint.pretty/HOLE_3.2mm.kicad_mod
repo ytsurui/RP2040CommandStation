@@ -1,0 +1,16 @@
+(footprint "HOLE_3.2mm" (version 20211014) (generator pcbnew)
+  (layer "F.Cu")
+  (tedit 5FEED877)
+  (solder_mask_margin 1.9)
+  (clearance 2.15)
+  (attr through_hole)
+  (fp_text reference "H**" (at 0 2.25) (layer "F.SilkS") hide
+    (effects (font (size 0.7 0.7) (thickness 0.14)))
+    (tstamp 2aeeaa81-f621-4ee9-8feb-7557b8c7319c)
+  )
+  (fp_text value "HOLE_3.2mm" (at 0 -2.25) (layer "F.Fab") hide
+    (effects (font (size 0.7 0.7) (thickness 0.14)))
+    (tstamp 3ab1baca-a41f-4a2f-a87d-02d0b0014692)
+  )
+  (pad "" np_thru_hole circle (at 0 0) (size 3.2 3.2) (drill 3.2) (layers *.Cu *.Mask) (tstamp 7d511758-a5d9-4da1-95b8-2be849c8bf29))
+)

@@ -25,13 +25,13 @@ void voltageMonitor::init(void)
     {
         voltBuf = (adcVoltageReadEvent() * 9);
         voltSum += voltBuf;
-        printf("voltBuf[%d]=%d, voltSum=%d\n", i, voltBuf, voltSum);
+        //printf("voltBuf[%d]=%d, voltSum=%d\n", i, voltBuf, voltSum);
         sleep_ms(5);
     }
 
     mvInit = (uint16_t)(voltSum / 32);
 
-    printf("Voltage Initial: %d\n", mvInit);
+    //printf("Voltage Initial: %d\n", mvInit);
 }
 
 void voltageMonitor::event(void)
@@ -52,7 +52,7 @@ void voltageMonitor::event(void)
         {
             if ((mvInit - mv) > 1000)
             {
-                printf("Voltage Down Emergency Shutdown, initvalue=%d, currentVoltage=%d\n", mvInit, mv);
+                //printf("Voltage Down Emergency Shutdown, initvalue=%d, currentVoltage=%d\n", mvInit, mv);
                 dccport::setPowerStat(false);
                 failureLED::setStat(true);
             }

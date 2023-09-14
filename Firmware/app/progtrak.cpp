@@ -484,7 +484,7 @@ void progtrak::EventProg(void)
     if (!progModeFlag)
         return;
 
-    printf("prog mode\n");
+    //printf("prog mode\n");
 
     switch (progMode & 0x7F)
     {
