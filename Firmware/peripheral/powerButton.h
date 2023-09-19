@@ -9,6 +9,7 @@ public:
 
 private:
     static uint8_t counter;
+    static uint8_t flag;
 };
 /*
 void initPowerButton(void);
