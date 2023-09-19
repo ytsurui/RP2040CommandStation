@@ -51,7 +51,7 @@ void keypad::event(void)
     uint8_t newKeyCode;
 
     counter2++;
-    if (counter2 < 8)
+    if (counter2 < 16)
         return;
     counter2 = 0;
 
