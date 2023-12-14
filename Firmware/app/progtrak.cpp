@@ -20,7 +20,7 @@ void progtrak::sendResetPacket(void)
 
     dccsignal::calcChecksumPacket(packet, 2);
     // return dccsignal::putPacket(packet, 3, 3, 0xFFFF, 0);
-    dccport::dcc_send_packet(packet, 3, 3);
+    dccport::dcc_send_packet(packet, 3, 4);
 }
 
 void progtrak::sendIdlePacket(void)
@@ -63,7 +63,7 @@ void progtrak::sendDirectReadByte(uint16_t cvNum, uint8_t checkDataValue)
 
     currentStat = false;
 
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < 15; i++)
     {
         dccport::dcc_send_packet(packet, 4, 1);
         /*
@@ -84,6 +84,7 @@ void progtrak::sendDirectReadByte(uint16_t cvNum, uint8_t checkDataValue)
 void progtrak::sendDirectReadBit(uint16_t cvNum, uint8_t checkBitPos, uint8_t bitValue)
 {
     uint8_t packet[4];
+    uint8_t i;
 
     if (checkBitPos > 7)
     {
@@ -99,8 +100,14 @@ void progtrak::sendDirectReadBit(uint16_t cvNum, uint8_t checkBitPos, uint8_t bi
 
     dccsignal::calcChecksumPacket(packet, 3);
     // return dccsignal::putPacket(packet, 3, 3, 0xFFFF, 0);
-    dccport::dcc_send_packet(packet, 4, 1);
-    dccport::dcc_send_packet(packet, 4, 5);
+    //dccport::dcc_send_packet(packet, 4, 1);
+    //dccport::dcc_send_packet(packet, 4, 15);
+    for (i = 0; i < 10; i++) {
+        dccport::dcc_send_packet(packet, 4, 1);
+        if (currentStat) {
+            break;
+        }
+    }
 }
 
 void progtrak::sendDirectWriteByte(uint16_t cvNum, uint8_t writeValue)
@@ -113,7 +120,7 @@ void progtrak::sendDirectWriteByte(uint16_t cvNum, uint8_t writeValue)
 
     dccsignal::calcChecksumPacket(packet, 3);
     // return dccsignal::putPacket(packet, 3, 3, 0xFFFF, 0);
-    dccport::dcc_send_packet(packet, 4, 6);
+    dccport::dcc_send_packet(packet, 4, 9);
 }
 
 void progtrak::sendDirectWriteBit(uint16_t cvNum, uint8_t pos, bool value)
@@ -134,7 +141,7 @@ void progtrak::sendDirectWriteBit(uint16_t cvNum, uint8_t pos, bool value)
 
     dccsignal::calcChecksumPacket(packet, 3);
     dccport::dcc_send_packet(packet, 4, 1);
-    dccport::dcc_send_packet(packet, 4, 5);
+    dccport::dcc_send_packet(packet, 4, 8);
 }
 
 bool progtrak::checkProgMode(void)
@@ -163,7 +170,8 @@ void progtrak::readCurrent(void)
     if (initCurrentValue < readTmp)
     {
         // printf("readCurrent curr=%d\n", readTmp);
-        if ((readTmp - initCurrentValue) > 5) // 18mA
+        //if ((readTmp - initCurrentValue) > 5) // 18mA
+        if ((readTmp - initCurrentValue) > 50) // 36mA
         {
             currentStat = true;
         }
@@ -172,37 +180,37 @@ void progtrak::readCurrent(void)
 
 void progtrak::readDirectModeBit(uint16_t cvNum)
 {
-    uint8_t i, i2;
+    uint8_t i, i2, i3;
     uint8_t readBit;
     uint8_t readValue = 0;
     // bool readStat = false;
     bool err = false;
 
     dccport::setPowerStat(false);
-    sleep_ms(1000);
+    sleep_ms(500);
     dccport::setProgmode(true);
     dccport::setPowerStat(true);
 
-    sendResetPacket();
-    sendResetPacket();
-    sendResetPacket();
-    sendResetPacket();
-    sendResetPacket();
-    sendResetPacket();
+    for (i = 0; i < 20; i++) {
+        sendResetPacket();
+    }
     initCurrentValue = readADCcachedValue(0);
     readCurrentFlag = true;
 
     for (i = 0; i < 8; i++)
     {
         readBit = 0xFF;
-        for (i2 = 0; i2 < 3; i2++)
+        for (i2 = 0; i2 < 6; i2++)
         {
             if (progProgressCb != nullptr)
             {
                 progProgressCb(i + 1, 8);
             }
-            sendResetPacket();
-            sendResetPacket();
+            //sendResetPacket();
+            //sendResetPacket();
+            for (i3 = 0; i3 < 8; i3++) {
+                sendResetPacket();
+            }
             currentStat = false;
             sendDirectReadBit(cvNum, i, 0);
             if (currentStat)
@@ -211,8 +219,11 @@ void progtrak::readDirectModeBit(uint16_t cvNum)
                 readBit = 0;
                 break;
             }
-            sendResetPacket();
-            sendResetPacket();
+            //sendResetPacket();
+            //sendResetPacket();
+            for (i3 = 0; i3 < 8; i3++) {
+                sendResetPacket();
+            }
             currentStat = false;
             sendDirectReadBit(cvNum, i, 1);
             if (currentStat)
@@ -293,12 +304,9 @@ void progtrak::readDirectModeByte(uint16_t cvNum)
     dccport::setProgmode(true);
     dccport::setPowerStat(true);
 
-    sendResetPacket();
-    sendResetPacket();
-    sendResetPacket();
-    sendResetPacket();
-    sendResetPacket();
-    sendResetPacket();
+    for (i = 0; i < 20; i++) {
+        sendResetPacket();
+    }
     initCurrentValue = adcCurrentReadEvent();
     // initCurrentValue = readADCcachedValue(0);
     readCurrentFlag = true;
@@ -390,6 +398,10 @@ void progtrak::writeDirectModeBit(uint16_t cvNum, uint8_t pos, bool value)
         sendResetPacket();
     }
     initCurrentValue = readADCcachedValue(0);
+    for (i = 0; i < 6; i++)
+    {
+        sendResetPacket();
+    }
     readCurrentFlag = true;
     currentStat = false;
 

@@ -15,7 +15,7 @@ void throttleAppMain::bootVersionInfo()
         writeLCDstring("CommandStation1");
     } else if (bootMsgCounter == 1500) {
         setLCDpos(1, 0);
-        writeLCDstring("FW Ver 0.9.1a  ");
+        writeLCDstring("FW Ver 0.9.1b  ");
     }
 }
 
