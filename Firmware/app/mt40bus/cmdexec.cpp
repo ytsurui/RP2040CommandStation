@@ -20,6 +20,10 @@ void mt40busCtrl::execCmdPW(uint32_t *args, uint8_t argCount)
             if (args[0] == 0) {
                 dccport::setPowerStat(false);
             } else if (args[0] == 1) {
+                if (powerManagerDown) {
+                    sendCmdPMUP(0);
+                    clearPMdownStat(0);
+                }
                 dccport::setPowerStat(true);
             }
             break;
@@ -27,6 +31,10 @@ void mt40busCtrl::execCmdPW(uint32_t *args, uint8_t argCount)
             if (args[1] == 0) {
                 dccport::setPowerStat(false);
             } else if (args[1] == 1) {
+                if (powerManagerDown) {
+                    sendCmdPMUP(0);
+                    clearPMdownStat(0);
+                }
                 dccport::setPowerStat(true);
             }
             break;
@@ -35,7 +43,12 @@ void mt40busCtrl::execCmdPW(uint32_t *args, uint8_t argCount)
 
 void mt40busCtrl::execCmdPWT(uint32_t *args, uint8_t argCount)
 {
-    dccport::togglePowerStat();
+    if (powerManagerDown) {
+        sendCmdPMUP(0);
+        clearPMdownStat(0);
+    } else {
+        dccport::togglePowerStat();
+    }
 }
 
 void mt40busCtrl::execCmdPWS(uint32_t *args, uint8_t argCount)
@@ -438,6 +451,42 @@ void mt40busCtrl::execCmdCPS(uint32_t *args, uint8_t argCount)
         sendCmd('CPS', respArgs, 3);
     }
 }
+
+// Power Manager Down
+void mt40busCtrl::execCmdPMD(uint32_t *args, uint8_t argCount)
+{
+    powerManagerDown = true;
+    if (argCount == 0) {
+        return;
+    }
+
+    setPMstatus(args[0], true);
+}
+
+// Power Manager Up
+void mt40busCtrl::execCmdPMUP(uint32_t *args, uint8_t argCount)
+{
+    if (argCount == 0) {
+        clearPMdownStat(0);
+    } else {
+        clearPMdownStat(args[0]);
+    }
+}
+
+// Power Manager Status
+void mt40busCtrl::execCmdPMST(uint32_t *args, uint8_t argCount)
+{
+    if (argCount != 1) {
+        return;
+    }
+
+    bool stat;
+ 
+    stat = getPMstatus(args[0]); 
+
+    sendCmdPMSTresp(args[0], stat);
+}
+
 
 uint16_t mt40busCtrl::decodeLocoAddr(uint32_t arg)
 {

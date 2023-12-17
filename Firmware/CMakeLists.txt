@@ -50,6 +50,7 @@ add_executable(
     app/mt40bus/cmdexec.cpp
     app/mt40bus/LBUS.cpp
     app/mt40bus/robotcmdexec.cpp
+    app/mt40bus/powermanager.cpp
 
     app/trainctrl.cpp
 

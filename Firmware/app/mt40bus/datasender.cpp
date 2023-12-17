@@ -97,6 +97,35 @@ void mt40busCtrl::sendCmdEcho(void)
     sendCmd('ECHO', nullptr, 0);
 }
 
+void mt40busCtrl::sendCmdPMUP(uint32_t addr)
+{
+    if (addr == 0) {
+        sendCmd('PMUP', nullptr, 0);
+    }
+
+    uint32_t sendArg[1];
+
+    sendArg[0] = addr;
+
+    sendCmd('PMUP', sendArg, 1);
+}
+
+void mt40busCtrl::sendCmdPMSTresp(uint32_t addr, bool stat)
+{
+    if (addr == 0) {
+        return;
+    }
+
+    uint32_t sendArg[2];
+    sendArg[0] = addr;
+    if (stat) {
+        sendArg[1] = 1;
+    } else {
+        sendArg[0] = 0;
+    }
+    sendCmd('PMST', sendArg, 2);
+}
+
 void mt40busCtrl::encodeNumToASCIIoct(uint32_t src, uint8_t *dest, uint8_t *length)
 {
     uint8_t pos = 0;

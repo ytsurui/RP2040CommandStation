@@ -26,6 +26,8 @@ void mt40busCtrl::init()
     recvObj[0].privatePacket = false;
     recvObj[1].privatePacket = false;
     recvObj[2].privatePacket = false;
+
+    PMinit();
 }
 
 void mt40busCtrl::recv(uint8_t rData)
@@ -276,6 +278,18 @@ void mt40busCtrl::execPacket()
         case 'PWS':
             // Power Status
             execCmdPWS(argTable, argIndex);
+            break;
+        case 'PMD':
+            // Power Manager Down
+            execCmdPMD(argTable, argIndex);
+            break;
+        case 'PMUP':
+            // Power Manager Up
+            execCmdPMUP(argTable, argIndex);
+            break;
+        case 'PMST':
+            // Power Manager STatus
+            execCmdPMST(argTable, argIndex);
             break;
         case 'DI':
             // Train Direction

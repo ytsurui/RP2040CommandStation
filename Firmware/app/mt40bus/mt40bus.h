@@ -3,6 +3,8 @@
 
 #define LAST_SEND_RECV_COUNT_TIMEOUT    10000       // 10000ms = 10sec
 
+#define POWER_MANAGER_MAX_COUNT 1024
+
 #define ENABLE_LBUS
 //#define SET_LBUS_LOCAL_COMMAND
 
@@ -22,6 +24,13 @@ class mt40busCtrl
         
         // Echo Function
         static void sendCmdEcho(void);
+
+        // Power Manager Command
+        static void PMinit(void);
+        static void sendCmdPMUP(uint32_t addr);
+        static void sendCmdPMSTresp(uint32_t addr, bool stat);
+        static bool getPMdownStat();
+        static void clearPMdownStat(uint32_t addr);
 
         static mt40busCtrl recvObj[3];
 
@@ -93,6 +102,19 @@ class mt40busCtrl
         static uint16_t decodeLocoAddr(uint32_t arg);
         static uint16_t decodeAccAddr(uint32_t arg);
 
+        // MT40 DCC PowerManager Functions/Variables
+        static bool powerManagerDown;    // Power Manager Down Flag
+        static uint32_t powerManagerStat[POWER_MANAGER_MAX_COUNT / 32];   // Power Manager Status Flags Bit
+
+        typedef struct
+        {
+            uint8_t index;
+            uint8_t bitpos;
+        } PMaddrIndexPos;
+
+        static void setPMstatus(uint32_t addr, bool stat);
+        static bool getPMstatus(uint32_t addr);
+        static PMaddrIndexPos getPMaddrIndexPos(uint32_t addr);
 
         // Power Control / Toggle
         static void execCmdPW(uint32_t *args, uint8_t argCount);
@@ -125,4 +147,9 @@ class mt40busCtrl
 
         // CommandStation Power Status
         static void execCmdCPS(uint32_t *args, uint8_t argCount);
+
+        // Power Manager Command
+        static void execCmdPMD(uint32_t *args, uint8_t argCount);   // Power Manager Down
+        static void execCmdPMUP(uint32_t *args, uint8_t argCount);  // Power Manager Up
+        static void execCmdPMST(uint32_t *args, uint8_t argCount);  // Power Manager Status
 };
