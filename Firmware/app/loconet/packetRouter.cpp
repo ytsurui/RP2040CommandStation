@@ -7,6 +7,8 @@
 
 #include "../../peripheral/dccsignalport.h"
 
+#include "../mt40bus/mt40bus.h"
+
 uint8_t loconetPacketRouter::packetBuf[LOCONET_PACKET_BUF_MAX];
 uint8_t loconetPacketRouter::bufpos;
 uint8_t loconetPacketRouter::packetLength;
@@ -92,9 +94,17 @@ void loconetPacketRouter::packetExec()
     switch (packetBuf[0])
     {
     case LT_PACKET_GP_OFF:
+        if (mt40busCtrl::getPMdownStat()) {
+            mt40busCtrl::sendCmdPMUP(0);
+            mt40busCtrl::clearPMdownStat(0);
+        }
         dccport::setPowerStat(false);
         break;
     case LT_PACKET_GP_ON:
+        if (mt40busCtrl::getPMdownStat()) {
+            mt40busCtrl::sendCmdPMUP(0);
+            mt40busCtrl::clearPMdownStat(0);
+        }
         dccport::setPowerStat(true);
         break;
     case LT_PACKET_LOCO_ADR:
