@@ -364,6 +364,7 @@ int main()
             {
                 // toggleDCCpowerStat();
                 dccport::togglePowerStat();
+                mt40busCtrl::sendCmdPWSresp();
             }
         }
     }

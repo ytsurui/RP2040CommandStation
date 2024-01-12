@@ -1,6 +1,7 @@
 
 #include "pico/stdlib.h"
 #include "mt40bus.h"
+#include "../../peripheral/dccsignalport.h"
 
 #include <stdio.h>
 
@@ -90,6 +91,19 @@ void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
     }
 
     //printf("send complete\n");
+}
+
+void mt40busCtrl::sendCmdPWSresp(void)
+{
+    uint32_t sendArg[1];
+
+    if (dccport::getPowerStat()) {
+        sendArg[0] = 1;
+    } else {
+        sendArg[0] = 0;
+    }
+
+    sendCmd('PWS', sendArg, 1);
 }
 
 void mt40busCtrl::sendCmdEcho(void)

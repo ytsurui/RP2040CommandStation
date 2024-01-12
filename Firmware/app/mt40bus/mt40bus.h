@@ -21,6 +21,9 @@ class mt40busCtrl
         static void sendCmd(uint32_t cmd, uint32_t *args, uint8_t length);
 
         static void setCarrierSenseFunc(bool (*method)(void));
+
+        // Power Command
+        static void sendCmdPWSresp(void);
         
         // Echo Function
         static void sendCmdEcho(void);
