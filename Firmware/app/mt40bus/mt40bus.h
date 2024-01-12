@@ -43,6 +43,9 @@ class mt40busCtrl
         static void sendLBUSdata(uint8_t *packet, uint8_t length);
 #endif
 
+        // MT40 DCC PowerManager Functions/Variables
+        static bool getPowerManagerDown();
+
     private:
     
         typedef struct

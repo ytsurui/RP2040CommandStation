@@ -362,8 +362,14 @@ int main()
             // if (readPowerButtonStat())
             if (powerbutton::readStat())
             {
-                // toggleDCCpowerStat();
-                dccport::togglePowerStat();
+                if (mt40busCtrl::getPowerManagerDown()) {
+                    mt40busCtrl::sendCmdPMUP(0);
+                    mt40busCtrl::clearPMdownStat(0);
+                    dccport::setPowerStat(true);
+                } else {
+                    // toggleDCCpowerStat();
+                    dccport::togglePowerStat();
+                }
                 mt40busCtrl::sendCmdPWSresp();
             }
         }

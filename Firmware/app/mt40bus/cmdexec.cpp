@@ -71,6 +71,11 @@ void mt40busCtrl::execCmdPWT(uint32_t *args, uint8_t argCount)
     sendCmd('PWS', respArgs, 1);
 }
 
+bool mt40busCtrl::getPowerManagerDown()
+{
+    return powerManagerDown;
+}
+
 void mt40busCtrl::execCmdPWS(uint32_t *args, uint8_t argCount)
 {
     if (argCount == 0) {
