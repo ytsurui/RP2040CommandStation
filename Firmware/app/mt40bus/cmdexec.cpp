@@ -38,7 +38,18 @@ void mt40busCtrl::execCmdPW(uint32_t *args, uint8_t argCount)
                 dccport::setPowerStat(true);
             }
             break;
+        default:
+            break;
     }
+
+    uint32_t respArgs[1];
+    if (dccport::getPowerStat()) {
+        respArgs[0] = 1;
+    } else {
+        respArgs[0] = 0;
+    }
+
+    sendCmd('PWS', respArgs, 1);
 }
 
 void mt40busCtrl::execCmdPWT(uint32_t *args, uint8_t argCount)
@@ -49,6 +60,15 @@ void mt40busCtrl::execCmdPWT(uint32_t *args, uint8_t argCount)
     } else {
         dccport::togglePowerStat();
     }
+
+    uint32_t respArgs[1];
+    if (dccport::getPowerStat()) {
+        respArgs[0] = 1;
+    } else {
+        respArgs[0] = 0;
+    }
+
+    sendCmd('PWS', respArgs, 1);
 }
 
 void mt40busCtrl::execCmdPWS(uint32_t *args, uint8_t argCount)
