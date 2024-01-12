@@ -115,6 +115,7 @@ void mt40busCtrl::sendCmdPMUP(uint32_t addr)
 {
     if (addr == 0) {
         sendCmd('PMUP', nullptr, 0);
+        return;
     }
 
     uint32_t sendArg[1];
