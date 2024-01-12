@@ -148,6 +148,9 @@ class mt40busCtrl
         // CommandStation Power Status
         static void execCmdCPS(uint32_t *args, uint8_t argCount);
 
+        // CutOut Status
+        static void execCmdCO(uint32_t *args, uint8_t argCount);    // CutOut railcom
+
         // Power Manager Command
         static void execCmdPMD(uint32_t *args, uint8_t argCount);   // Power Manager Down
         static void execCmdPMUP(uint32_t *args, uint8_t argCount);  // Power Manager Up
