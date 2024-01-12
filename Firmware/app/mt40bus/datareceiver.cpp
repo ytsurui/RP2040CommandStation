@@ -348,7 +348,7 @@ void mt40busCtrl::execPacket()
             execCmdRSPS(argTable, argIndex);
             break;
         default:
-            printf("unknown packet: cmdData=%s\n", cmdData);
+            //printf("unknown packet: cmdData=%s\n", cmdData);
             break;
     }
 
