@@ -121,6 +121,8 @@ void mt40busCtrl::execPacket()
     bool noneArgFlag = true;
     uint8_t argIndex = 0;
 
+    char cmdBytes[5];
+    uint32_t cmdLength = 0;
 
     uint32_t cmdData;
     uint32_t argTable[10];
@@ -176,6 +178,8 @@ void mt40busCtrl::execPacket()
                     break;
                 }
                 //printf("cmdData: %d, data: %d\n", cmdData, execData.Buf[i]);
+                cmdBytes[i] = execData.Buf[i];
+                cmdLength++;
                 cmdData = (cmdData << 8) | execData.Buf[i];
                 //printf("cmdData: %d\n", cmdData);
                 break;
@@ -263,22 +267,35 @@ void mt40busCtrl::execPacket()
     }
 #endif
 
+    if (compareStr(cmdBytes, cmdLength, (char*)"ECHO", 4)) {
+        // Echo (No Operation)
+    } else if (compareStr(cmdBytes, cmdLength, (char*)"PW", 2)) {
+        // Power
+        execCmdPW(argTable, argIndex);        
+    } else if (compareStr(cmdBytes, cmdLength, (char*)"PWT", 3)) {
+        // Power Toggle
+        execCmdPWT(argTable, argIndex);
+    } else if (compareStr(cmdBytes, cmdLength, (char*)"PWS", 3)) {
+        // Power Status
+        execCmdPWS(argTable, argIndex);
+    }
+
     switch (cmdData) {
-        case 'ECHO':
-            // Echo
-            break;
-        case 'PW':
-            // Power
-            execCmdPW(argTable, argIndex);            
-            break;
-        case 'PWT':
-            // Power Toggle
-            execCmdPWT(argTable, argIndex);
-            break;
-        case 'PWS':
-            // Power Status
-            execCmdPWS(argTable, argIndex);
-            break;
+        //case 'ECHO':
+        //    // Echo
+        //    break;
+        //case 'PW':
+        //    // Power
+        //    execCmdPW(argTable, argIndex);            
+        //    break;
+        //case 'PWT':
+        //    // Power Toggle
+        //    execCmdPWT(argTable, argIndex);
+        //    break;
+        //case 'PWS':
+        //    // Power Status
+        //    execCmdPWS(argTable, argIndex);
+        //    break;
         case 'PMD':
             // Power Manager Down
             execCmdPMD(argTable, argIndex);
@@ -357,4 +374,5 @@ void mt40busCtrl::execPacket()
     }
 
 }
+
 
