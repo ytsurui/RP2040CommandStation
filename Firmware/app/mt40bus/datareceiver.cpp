@@ -124,7 +124,7 @@ void mt40busCtrl::execPacket()
     char cmdBytes[5];
     uint32_t cmdLength = 0;
 
-    uint32_t cmdData;
+    //uint32_t cmdData;
     uint32_t argTable[10];
 
     bool LBUSlowerFlag;
@@ -149,7 +149,7 @@ void mt40busCtrl::execPacket()
 
     cmdChkFlag = false;
     cmdExitFlag = false;
-    cmdData = 0;
+    //cmdData = 0;
     argGetCount = 0;
     mode = EXEC_PACKET_MODE_CMD;
 
@@ -163,7 +163,8 @@ void mt40busCtrl::execPacket()
                 if (i > 4) return;
                 if (execData.Buf[i] == '(' || execData.Buf[i] == '{') {
                     cmdChkFlag = true;
-                    if (cmdData == 'LBUS') {
+                    if (compareStr(cmdBytes, cmdLength, (char*)"LBUS", 4)) {
+                    //if (cmdData == 'LBUS') {
                         mode = EXEC_PACKET_MODE_LBUS;
                         LBUSlowerFlag = false;
                         LBUSgetpos = 0;
@@ -180,7 +181,7 @@ void mt40busCtrl::execPacket()
                 //printf("cmdData: %d, data: %d\n", cmdData, execData.Buf[i]);
                 cmdBytes[i] = execData.Buf[i];
                 cmdLength++;
-                cmdData = (cmdData << 8) | execData.Buf[i];
+                //cmdData = (cmdData << 8) | execData.Buf[i];
                 //printf("cmdData: %d\n", cmdData);
                 break;
             case EXEC_PACKET_MODE_ARGS:
@@ -257,7 +258,8 @@ void mt40busCtrl::execPacket()
     if (!cmdChkFlag || !cmdExitFlag) return;
 
 #ifdef ENABLE_LBUS
-    if (cmdData == 'LBUS') {
+    if (compareStr(cmdBytes, cmdLength, (char*)"LBUS", 4)) {
+    //if (cmdData == 'LBUS') {
         if (LBUSrecvCb.assigned) {
             for (i = 0; i < LBUSgetpos; i++) {
                 LBUSrecvCb.func(LBUSrecvDatas[i]);
@@ -267,19 +269,97 @@ void mt40busCtrl::execPacket()
     }
 #endif
 
-    if (compareStr(cmdBytes, cmdLength, (char*)"ECHO", 4)) {
-        // Echo (No Operation)
-    } else if (compareStr(cmdBytes, cmdLength, (char*)"PW", 2)) {
-        // Power
-        execCmdPW(argTable, argIndex);        
-    } else if (compareStr(cmdBytes, cmdLength, (char*)"PWT", 3)) {
-        // Power Toggle
-        execCmdPWT(argTable, argIndex);
-    } else if (compareStr(cmdBytes, cmdLength, (char*)"PWS", 3)) {
-        // Power Status
-        execCmdPWS(argTable, argIndex);
+    switch (cmdLength) {
+        case 2:
+            if (compareStr(cmdBytes, cmdLength, (char*)"PW", 2)) {
+                // Power
+                execCmdPW(argTable, argIndex);        
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"DI", 2)) {
+                // Train Direction
+                execCmdDI(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"FN", 2)) {
+                // Train Function
+                execCmdFN(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"SP", 2)) {
+                // Train Speed
+                execCmdSP(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"TO", 2)) {
+                // Turnout (Accessory Decoders)
+                execCmdTO(argTable, argIndex);
+            }
+            break;
+        case 3:
+            if (compareStr(cmdBytes, cmdLength, (char*)"PWT", 3)) {
+                // Power Toggle
+                execCmdPWT(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"PWS", 3)) {
+                // Power Status
+                execCmdPWS(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"PMD", 3)) {
+                // Power Manager Down
+                execCmdPMD(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"DIS", 3)) {
+                // Train Direction Status
+                execCmdDIS(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"FNS", 3)) {
+                // Train Function Status;
+                execCmdFNS(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"SPS", 3)) {
+                // Train Speed Status
+                execCmdSPS(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"TOS", 3)) {
+                // Turnout (Accessory Decoders) Status
+                execCmdTOS(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"CPS", 3)) {
+                // CommandStation Power Status
+                execCmdCPS(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"RDI", 3)) {
+                // Rootuser/Robot Direction Input
+                execCmdRDI(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"RSP", 3)) {
+                //Rootuser/Robot Speed
+                execCmdRSP(argTable, argIndex);
+            }
+            break;
+        case 4:
+            if (compareStr(cmdBytes, cmdLength, (char*)"ECHO", 4)) {
+                // Echo (No Operation)
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"PMUP", 4)) {
+                // Power Manager UP
+                execCmdPMUP(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"PMST", 4)) {
+                // Power Manager STatus
+                execCmdPMST(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"RDIT", 4)) {
+                // Rootuser/Robot Direction Input Toggle
+                execCmdRDIT(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"RDIS", 4)) {
+                // Rootuser/Robot Diretcion Status
+                execCmdRDIS(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"RSPS", 4)) {
+                //Rootuser/Robot Speed Status
+                execCmdRSPS(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"WTYP", 4)) {
+                // Wireless Config Wireless Type
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"WCFG", 4)) {
+                // Wireless Config Request
+            }
+            break;
     }
 
+    //if (compareStr(cmdBytes, cmdLength, (char*)"ECHO", 4)) {
+    //    // Echo (No Operation)
+    //} else if (compareStr(cmdBytes, cmdLength, (char*)"PW", 2)) {
+    //    // Power
+    //    execCmdPW(argTable, argIndex);        
+    //} else if (compareStr(cmdBytes, cmdLength, (char*)"PWT", 3)) {
+    //    // Power Toggle
+    //    execCmdPWT(argTable, argIndex);
+    //} else if (compareStr(cmdBytes, cmdLength, (char*)"PWS", 3)) {
+    //    // Power Status
+    //    execCmdPWS(argTable, argIndex);
+    //}
+    /*
     switch (cmdData) {
         //case 'ECHO':
         //    // Echo
@@ -296,78 +376,79 @@ void mt40busCtrl::execPacket()
         //    // Power Status
         //    execCmdPWS(argTable, argIndex);
         //    break;
-        case 'PMD':
-            // Power Manager Down
-            execCmdPMD(argTable, argIndex);
-            break;
-        case 'PMUP':
-            // Power Manager Up
-            execCmdPMUP(argTable, argIndex);
-            break;
-        case 'PMST':
-            // Power Manager STatus
-            execCmdPMST(argTable, argIndex);
-            break;
-        case 'DI':
-            // Train Direction
-            execCmdDI(argTable, argIndex);
-            break;
-        case 'DIS':
-            // Train Direction Status
-            execCmdDIS(argTable, argIndex);
-            break;
-        case 'FN':
-            // Train Function
-            execCmdFN(argTable, argIndex);
-            break;
-        case 'FNS':
-            // Train Function Status;
-            execCmdFNS(argTable, argIndex);
-            break;
-        case 'SP':
-            // Train Speed
-            execCmdSP(argTable, argIndex);
-            break;
-        case 'SPS':
-            // Train Speed Status
-            execCmdSPS(argTable, argIndex);
-            break;
-        case 'TO':
-            // Turnout (Accessory Decoders)
-            execCmdTO(argTable, argIndex);
-            break;
-        case 'TOS':
-            // Turnout (Accessory Decoders) Status
-            execCmdTOS(argTable, argIndex);
-            break;
-        case 'CPS':
-            // CommandStation Power Status
-            execCmdCPS(argTable, argIndex);
-            break;
-        case 'RDI':
-            // Rootuser/Robot Direction Input
-            execCmdRDI(argTable, argIndex);
-            break;
-        case 'RDIT':
-            // Rootuser/Robot Direction Input Toggle
-            execCmdRDIT(argTable, argIndex);
-            break;
-        case 'RDIS':
-            // Rootuser/Robot Diretcion Status
-            execCmdRDIS(argTable, argIndex);
-            break;
-        case 'RSP':
-            //Rootuser/Robot Speed
-            execCmdRSP(argTable, argIndex);
-            break;
-        case 'RSPS':
-            //Rootuser/Robot Speed Status
-            execCmdRSPS(argTable, argIndex);
-            break;
+        //case 'PMD':
+        //    // Power Manager Down
+        //    execCmdPMD(argTable, argIndex);
+        //    break;
+        //case 'PMUP':
+        //    // Power Manager Up
+        //    execCmdPMUP(argTable, argIndex);
+        //    break;
+        //case 'PMST':
+        //    // Power Manager STatus
+        //    execCmdPMST(argTable, argIndex);
+        //    break;
+        //case 'DI':
+        //    // Train Direction
+        //    execCmdDI(argTable, argIndex);
+        //    break;
+        //case 'DIS':
+        //    // Train Direction Status
+        //    execCmdDIS(argTable, argIndex);
+        //    break;
+        //case 'FN':
+        //    // Train Function
+        //    execCmdFN(argTable, argIndex);
+        //    break;
+        //case 'FNS':
+        //    // Train Function Status;
+        //    execCmdFNS(argTable, argIndex);
+        //    break;
+        //case 'SP':
+        //    // Train Speed
+        //    execCmdSP(argTable, argIndex);
+        //    break;
+        //case 'SPS':
+        //    // Train Speed Status
+        //    execCmdSPS(argTable, argIndex);
+        //    break;
+        //case 'TO':
+        //    // Turnout (Accessory Decoders)
+        //    execCmdTO(argTable, argIndex);
+        //    break;
+        //case 'TOS':
+        //    // Turnout (Accessory Decoders) Status
+        //    execCmdTOS(argTable, argIndex);
+        //    break;
+        //case 'CPS':
+        //    // CommandStation Power Status
+        //    execCmdCPS(argTable, argIndex);
+        //    break;
+        //case 'RDI':
+        //    // Rootuser/Robot Direction Input
+        //    execCmdRDI(argTable, argIndex);
+        //    break;
+        //case 'RDIT':
+        //    // Rootuser/Robot Direction Input Toggle
+        //    execCmdRDIT(argTable, argIndex);
+        //    break;
+        //case 'RDIS':
+        //    // Rootuser/Robot Diretcion Status
+        //    execCmdRDIS(argTable, argIndex);
+        //    break;
+        //case 'RSP':
+        //    //Rootuser/Robot Speed
+        //    execCmdRSP(argTable, argIndex);
+        //    break;
+        //case 'RSPS':
+        //    //Rootuser/Robot Speed Status
+        //    execCmdRSPS(argTable, argIndex);
+        //    break;
         default:
             //printf("unknown packet: cmdData=%s\n", cmdData);
             break;
     }
+    */
 
     for (i = 0; i < MT40BUS_BUF_LENGTH; i++) {
         execData.Buf[i] = 0;
