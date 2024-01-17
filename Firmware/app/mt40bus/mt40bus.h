@@ -5,6 +5,8 @@
 
 #define POWER_MANAGER_MAX_COUNT 1024
 
+#define SEND_PMUP_COUNTER_MAX   500
+
 #define ENABLE_LBUS
 //#define SET_LBUS_LOCAL_COMMAND
 
@@ -35,7 +37,13 @@ class mt40busCtrl
         static bool getPMdownStat();
         static void clearPMdownStat(uint32_t addr);
 
+        static void sendCmdPMSE();
+        static void sendCmdPMPG(uint32_t addr, uint32_t datanum, uint32_t value);
+        static void sendCmdPMBP(uint32_t addr);
+
         static mt40busCtrl recvObj[3];
+
+        static bool checkSendPMUP();
 
 #ifdef ENABLE_LBUS
         static void setLBUScommandReceiver(void (*func)(uint8_t));
@@ -126,6 +134,7 @@ class mt40busCtrl
         static void execCmdPW(uint32_t *args, uint8_t argCount);
         static void execCmdPWT(uint32_t *args, uint8_t argCount);
         static void execCmdPWS(uint32_t *args, uint8_t argCount);
+        static uint32_t sendPMUPcounter;
 
         // Train Direction
         static void execCmdDI(uint32_t *args, uint8_t argCount);    // Train Direction
@@ -161,4 +170,8 @@ class mt40busCtrl
         static void execCmdPMD(uint32_t *args, uint8_t argCount);   // Power Manager Down
         static void execCmdPMUP(uint32_t *args, uint8_t argCount);  // Power Manager Up
         static void execCmdPMST(uint32_t *args, uint8_t argCount);  // Power Manager Status
+
+        // Wireless Config
+        static void execCmdWTYP(uint32_t *args, uint8_t argCount);
+        static void execCmdWCFG(uint32_t *args, uint8_t argCount);
 };

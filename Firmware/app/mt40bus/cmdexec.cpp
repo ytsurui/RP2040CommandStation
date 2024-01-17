@@ -21,8 +21,9 @@ void mt40busCtrl::execCmdPW(uint32_t *args, uint8_t argCount)
                 dccport::setPowerStat(false);
             } else if (args[0] == 1) {
                 if (powerManagerDown) {
-                    sendCmdPMUP(0);
-                    clearPMdownStat(0);
+                    //sendCmdPMUP(0);
+                    //clearPMdownStat(0);
+                    sendPMUPcounter = 1;
                 }
                 dccport::setPowerStat(true);
             }
@@ -32,8 +33,9 @@ void mt40busCtrl::execCmdPW(uint32_t *args, uint8_t argCount)
                 dccport::setPowerStat(false);
             } else if (args[1] == 1) {
                 if (powerManagerDown) {
-                    sendCmdPMUP(0);
-                    clearPMdownStat(0);
+                    //sendCmdPMUP(0);
+                    //clearPMdownStat(0);
+                    sendPMUPcounter = 1;
                 }
                 dccport::setPowerStat(true);
             }
@@ -55,8 +57,9 @@ void mt40busCtrl::execCmdPW(uint32_t *args, uint8_t argCount)
 void mt40busCtrl::execCmdPWT(uint32_t *args, uint8_t argCount)
 {
     if (powerManagerDown) {
-        sendCmdPMUP(0);
-        clearPMdownStat(0);
+        //sendCmdPMUP(0);
+        //clearPMdownStat(0);
+        sendPMUPcounter = 1;
     } else {
         dccport::togglePowerStat();
     }
@@ -369,7 +372,7 @@ void mt40busCtrl::execCmdSP(uint32_t *args, uint8_t argCount)
         return;
     }
 
-    spd = (uint8_t)(args[1] & 0x000000FF);
+    spd = (uint8_t)((args[1] & 0x000003FC) >> 3);
 
     switch (args[2]) {
         case 0:
@@ -409,7 +412,11 @@ void mt40busCtrl::execCmdSPS(uint32_t *args, uint8_t argCount)
         respArgs[0] = args[0];
 
         if (trainCtrlObj.train->getSpeedType(&spd, &ctrlType)) {
-            respArgs[1] = spd;
+            if (spd == 0) {
+                respArgs[1] = 0;
+            } else {
+                respArgs[1] = (spd << 3) + 0x07;
+            }
             respArgs[2] = ctrlType;
 
             sendCmd('SPS', respArgs, 3);
