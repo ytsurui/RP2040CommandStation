@@ -61,7 +61,7 @@ void dccport::dcc_send_pulse(uint8_t value)
     }
     else
     {
-        _dcc_send_pulse(100, 100);
+        _dcc_send_pulse(120, 120);
     }
 }
 
