@@ -286,6 +286,9 @@ void mt40busCtrl::execPacket()
             } else if (compareStr(cmdBytes, cmdLength, (char*)"TO", 2)) {
                 // Turnout (Accessory Decoders)
                 execCmdTO(argTable, argIndex);
+            } else if (compareStr(cmdBytes, cmdLength, (char*)"CO", 2)) {
+                // Curout Status
+                execCmdCO(argTable, argIndex);
             }
             break;
         case 3:
