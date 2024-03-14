@@ -14,6 +14,9 @@ public:
 
     static uint8_t getWaitPacketCount(void);
 
+    static void SetBiDiCutout(bool newstat);
+    static bool GetBiDiCutoutStat(void);
+
 private:
     typedef struct
     {
@@ -42,6 +45,8 @@ private:
     static bool bufferMutexFlag;
     static bool bufferCounterMutexFlag;
     static bool cutoutFlagMutexFlag;
+
+    static bool enableBiDiCutout;
 
     static packetStruct *getPacketBuffer(void);
 };

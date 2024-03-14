@@ -18,6 +18,8 @@ uint8_t dccsignal::dccPBufInPos = 0;
 uint8_t dccsignal::dccPBufOutPos = 0;
 uint8_t dccsignal::dccPBufCount = 0;
 
+bool dccsignal::enableBiDiCutout = true;
+
 bool dccsignal::bufferMutexFlag = false;
 bool dccsignal::cutoutFlagMutexFlag = false;
 bool dccsignal::bufferCounterMutexFlag = false;
@@ -38,6 +40,9 @@ void dccsignal::event(void)
     }
 
     railcomCutoutTimmingCounter++;
+    if (!enableBiDiCutout) {
+        railcomCutoutTimmingCounter = 0;
+    }
 
     // if (railcomCutoutTimmingCounter > CUTOUT_TIMMING_COUNT_MAX)
     if (railcomCutoutTimmingCounter > count_max)
@@ -250,4 +255,14 @@ void dccsignal::calcChecksumPacket(uint8_t *packet, uint8_t length)
     {
         packet[length] ^= packet[i];
     }
+}
+
+void dccsignal::SetBiDiCutout(bool newstat)
+{
+    enableBiDiCutout = newstat;
+}
+
+bool dccsignal::GetBiDiCutoutStat(void)
+{
+    return enableBiDiCutout;
 }
