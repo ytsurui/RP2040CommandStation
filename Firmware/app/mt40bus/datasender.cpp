@@ -40,6 +40,11 @@ void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
         //}
     }
 
+    sendData[byteLength] = '\r';
+    byteLength++;
+    sendData[byteLength] = '\n';
+    byteLength++;
+
     //printf("data send cmd: %d\n", cmd);
 
     while (cmd != 0) {
