@@ -34,7 +34,7 @@ void mt40busCtrl::recv(uint8_t rData)
 {
     lastSendRecvCount = 0;   
 
-    if ((rData == '\n') || (rData == ' ')) {
+    if ((rData == '\n') || (rData == ' ') || (rData == 0)) {
         // Ignore
         //printf("packet ignore\n");
         return;
