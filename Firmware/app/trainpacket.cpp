@@ -155,7 +155,8 @@ bool trainpacket::sendSpeed128Packet(uint16_t trainAddr, uint8_t direction, uint
 
     if (speed > 127)
     {
-        speed = 127;
+        return false;
+        //speed = 127;
     }
 
     if (direction == TRAIN_SPD_DIR_FOR)
