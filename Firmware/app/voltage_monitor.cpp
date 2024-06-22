@@ -50,9 +50,9 @@ void voltageMonitor::event(void)
 
         if (mvInit > mv)
         {
-            if ((mvInit - mv) > 1000)
+            if ((mvInit - mv) > 3000)
             {
-                //printf("Voltage Down Emergency Shutdown, initvalue=%d, currentVoltage=%d\n", mvInit, mv);
+                printf("Voltage Down Emergency Shutdown, initvalue=%d, currentVoltage=%d\n", mvInit, mv);
                 dccport::setPowerStat(false);
                 failureLED::setStat(true);
             }
