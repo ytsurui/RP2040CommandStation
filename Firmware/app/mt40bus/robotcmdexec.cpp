@@ -49,9 +49,9 @@ void mt40busCtrl::execCmdRDIT(uint32_t *args, uint8_t argCount)
     }
 
     if (trainCtrlObj.train->getRobotDirection()) {
-        trainCtrlObj.train->setRobotDirection(1);
-    } else {
         trainCtrlObj.train->setRobotDirection(0);
+    } else {
+        trainCtrlObj.train->setRobotDirection(1);
     }
 }
 
