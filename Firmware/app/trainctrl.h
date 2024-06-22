@@ -55,6 +55,9 @@ private:
     uint8_t robotDir;
     uint8_t robotSpd;
 
+    uint8_t origDir;
+    uint8_t origSpd;
+
     typedef struct
     {
         bool enable;
@@ -89,6 +92,8 @@ private:
     void taskStub(trainDataInfo targetData);
 
     void funcSendStub(trainDataInfo *fg, uint16_t appendWaitCount, uint16_t *smallSendCount, uint8_t funcGroup);
+
+    void refreshTrainSpdDir();
 };
 
 class trainctrl

@@ -439,6 +439,9 @@ void trainInfo::clearAddr(void)
 
 bool trainInfo::setSpeed14(uint8_t dir, uint8_t spd)
 {
+    origDir = dir;
+    origSpd = spd;
+
     if (robotDir == 1) {
         // Robot Direction Control
         if (dir == 1) {
@@ -472,6 +475,9 @@ bool trainInfo::setSpeed14(uint8_t dir, uint8_t spd)
 
 bool trainInfo::setSpeed28(uint8_t dir, uint8_t spd)
 {
+    origDir = dir;
+    origSpd = spd;
+
     if (robotDir == 1) {
         // Robot Direction Control
         if (dir == 1) {
@@ -504,6 +510,9 @@ bool trainInfo::setSpeed28(uint8_t dir, uint8_t spd)
 
 bool trainInfo::setSpeed128(uint8_t dir, uint8_t spd)
 {
+    origDir = dir;
+    origSpd = spd;
+
     if (robotDir == 1) {
         // Robot Direction Control
         if (dir == 1) {
@@ -713,6 +722,7 @@ bool trainInfo::setRobotDirection(uint8_t dir)
 
     robotDir = dir;
     lastCtrlCounter = 0;
+    refreshTrainSpdDir();
     return true;
 }
 
@@ -722,6 +732,7 @@ bool trainInfo::setRobotMaxSpd(uint8_t spd)
 
     robotSpd = spd;
     lastCtrlCounter = 0;
+    refreshTrainSpdDir();
     return true;
 }
 
@@ -733,4 +744,20 @@ uint8_t trainInfo::getRobotDirection()
 uint8_t trainInfo::getRobotMaxSpd()
 {
     return robotSpd;
+}
+
+void trainInfo::refreshTrainSpdDir()
+{
+    if (trainData.speed14.enable)
+    {
+        setSpeed14(origDir, origSpd);
+    }
+    else if (trainData.speed28.enable)
+    {
+        setSpeed28(origDir, origSpd);
+    }
+    else if (trainData.speed128.enable)
+    {
+        setSpeed128(origDir, origSpd);
+    }
 }
