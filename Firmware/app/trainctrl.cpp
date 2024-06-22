@@ -515,7 +515,7 @@ bool trainInfo::setSpeed128(uint8_t dir, uint8_t spd)
 
     
     if (robotSpd < 100) {
-        if (robotSpd = 0) {
+        if (robotSpd == 0) {
             spd = 0;
         } else {
             spd = spd * robotSpd / 100;
