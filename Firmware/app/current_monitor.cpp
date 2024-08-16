@@ -169,13 +169,13 @@ void currentMonitor::event(void)
 
             if (overCurrentCounter >= OVERCURRENT_COUNTER_MAX)
             {
-                //printf("overcurrent shutdown, value=%d\n", currentValue);
+                printf("overcurrent shutdown, value=%d\n", currentValue);
                 dccport::setPowerStat(false);
                 failureLED::setStat(true);
             }
             else if ((OVERCURRENT_COUNTER_MAX - overCurrentCounter) < OVERCURRENT_RETURN_VALUE)
             {
-                //printf("overcurrent timeout shutdown, value=%d\n", currentValue);
+                printf("overcurrent timeout shutdown, value=%d\n", currentValue);
                 dccport::setPowerStat(false);
                 failureLED::setStat(true);
             }
