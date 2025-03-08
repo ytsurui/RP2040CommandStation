@@ -31,6 +31,26 @@ void writeLCDstring(char *str)
     }
 }
 
+void showHex32Bit(uint32_t num)
+{
+    uint8_t i;
+    uint8_t showValue;
+
+    for (i = 0; i < 8; i++)
+    {
+        showValue = (num >> 28) & 0x0F;
+        num <<= 4;
+        if (showValue < 10)
+        {
+            writeLCDdata(0x30 + showValue);
+        }
+        else
+        {
+            writeLCDdata(0x37 + showValue);
+        }
+    }
+}
+
 void initLCD(void)
 {
     gpio_init(LCD_RESET_PORT);

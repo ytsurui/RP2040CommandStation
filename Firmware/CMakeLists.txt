@@ -63,6 +63,9 @@ add_executable(
     app/throttle/th_trainctrl.cpp
     app/throttle/th_switchctrl.cpp
     app/throttle/th_prog.cpp
+
+    app/wconfig/detect.cpp
+    app/wconfig/tweliteuart.cpp
 )
 
 pico_set_program_name(RP2040_DCC_CommandStation "RP2040_DCC_CommandStation")

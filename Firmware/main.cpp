@@ -33,6 +33,7 @@
 #include "app/loconet/packetRouter.h"
 
 #include "app/mt40bus/mt40bus.h"
+#include "app/wconfig/wconfig.h"
 
 #include <stdio.h>
 
@@ -210,6 +211,9 @@ int main()
 
     throttleAppMain::bootVersionInfo();
     bootEventCount = 0;
+
+    //無線モジュールの情報取得
+    wirelessConfig::detectProc();
     
     while(1) {
         if (eventtimer::checkMS()) {
@@ -249,6 +253,39 @@ int main()
             }
         }
     }
+
+    // 無線モジュールの初期化
+    if (wirelessConfig::getModuleType() == WIRELESS_CONFIG_MODULE_TYPE_TWELITE_UART && wirelessConfig::tweliteNeedInit()) {
+        // 初期化が必要
+        throttleAppMain::bootWirelessInitMsg(WIRELESS_CONFIG_MODULE_TYPE_TWELITE_UART);
+        bootEventCount = 0;
+        wirelessConfig::setTweliteInit();
+    }
+
+    if (wirelessConfig::getModuleType() == WIRELESS_CONFIG_MODULE_TYPE_TWELITE_UART) {
+        if (wirelessConfig::twelite_app_id != wirelessConfig::wModuleAddr) {
+            // 親機限定処理: アプリケーションIDの設定
+            throttleAppMain::bootWirelessSetNetIDMsg(wirelessConfig::wModuleAddr);
+            wirelessConfig::setTweliteAppID(wirelessConfig::wModuleAddr);
+            wirelessConfig::detectProc();
+        }
+    }
+
+    // 無線モジュールの情報表示
+    throttleAppMain::bootWirelessInfoMsg();
+    bootEventCount = 0;
+    while(1)
+    {
+        if (eventtimer::checkMS())
+        {
+            bootEventCount++;
+            if (bootEventCount >= 1500)
+            {
+                break;
+            }
+        }
+    }
+
 
 //    loconetPacketRouter::init();
     // uartTest::setCallback(loconetPacketRouter::recv);

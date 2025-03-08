@@ -15,6 +15,10 @@ public:
     static void bootVersionInfo();
     static uint8_t bootMsgShowTimming();
 
+    static void bootWirelessInitMsg(uint8_t devType);
+    static void bootWirelessInfoMsg();
+    static void bootWirelessSetNetIDMsg(uint32_t netID);
+
 private:
     static throttleAppTrainCtrl trainCtrlObj[2];
 

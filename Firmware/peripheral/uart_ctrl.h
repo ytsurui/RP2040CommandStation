@@ -15,6 +15,9 @@ public:
 
     void setBaudRate(int baud);
     void setRecvCallback(void (*cb)(uint8_t));
+    void evacuationCallback();
+    void restoreCallback();
+    void clearRecvCallback();
 
     static void bridgeMode(bool stat);
 
@@ -33,4 +36,5 @@ private:
     uint gpio_rx_num;
 
     void (*recvCb)(uint8_t);
+    void (*evacuationCb)(uint8_t);
 };

@@ -106,6 +106,23 @@ void uartCtrl::setRecvCallback(void (*cb)(uint8_t))
     recvCb = cb;
 }
 
+void uartCtrl::evacuationCallback()
+{
+    evacuationCb = recvCb;
+    recvCb = nullptr;
+}
+
+void uartCtrl::restoreCallback()
+{
+    recvCb = evacuationCb;
+    evacuationCb = nullptr;
+}
+
+void uartCtrl::clearRecvCallback()
+{
+    recvCb = nullptr;
+}   
+
 void uartCtrl::BusGPIOdir(uint8_t num, bool dir, bool pullup)
 {
     uint8_t gpioNum;
