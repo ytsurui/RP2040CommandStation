@@ -21,6 +21,7 @@ class mt40busCtrl
 
         static void setSender(void (*method)(uint8_t));
         static void sendCmd(uint32_t cmd, uint32_t *args, uint8_t length);
+        static void sendCmd(uint32_t cmd, uint32_t *args, uint8_t length, bool privatePacket);
 
         static void setCarrierSenseFunc(bool (*method)(void));
 

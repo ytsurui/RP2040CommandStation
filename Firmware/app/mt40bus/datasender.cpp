@@ -22,9 +22,14 @@ void mt40busCtrl::setCarrierSenseFunc(bool (*method)(void))
 
 void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
 {
+    sendCmd(cmd, args, length, false);
+}
+
+void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length, bool privatePacket)
+{
     uint8_t byteData, i, i2, datLength;
     uint8_t sendData[64];
-    uint8_t ASCIIdata[6];
+    uint8_t ASCIIdata[10];
     uint8_t byteLength = 0;
     bool separateFlag;
 
@@ -58,7 +63,11 @@ void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
         if (cmd == 0) break;
     }
 
-    sendData[byteLength] = '(';
+    if (privatePacket) {
+        sendData[byteLength] = '{';
+    } else {
+        sendData[byteLength] = '(';
+    }
     byteLength++;
     separateFlag = false;
 
@@ -77,7 +86,11 @@ void mt40busCtrl::sendCmd(uint32_t cmd, uint32_t *args, uint8_t length)
         separateFlag = true;
     }
 
-    sendData[byteLength] = ')';
+    if (privatePacket) {
+        sendData[byteLength] = '}';
+    } else {
+        sendData[byteLength] = ')';
+    }
     byteLength++;
 
     sendData[byteLength] = '\r';
@@ -150,8 +163,14 @@ void mt40busCtrl::encodeNumToASCIIoct(uint32_t src, uint8_t *dest, uint8_t *leng
 {
     uint8_t pos = 0;
 
+    if (src >= 1000000000) {
+        dest[pos] = '0' + (uint8_t)(src / 1000000000);
+        src = src % 1000000000;
+        pos++;
+    }
+
     if (src >= 100000000) {
-        dest[pos] = '0' + (uint8_t)(src / 1000000);
+        dest[pos] = '0' + (uint8_t)(src / 100000000);
         src = src % 100000000;
         pos++;
     }
