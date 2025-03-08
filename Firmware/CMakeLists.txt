@@ -48,6 +48,7 @@ add_executable(
     app/mt40bus/datareceiver.cpp
     app/mt40bus/datasender.cpp
     app/mt40bus/cmdexec.cpp
+    app/mt40bus/cmdexeccfg.cpp
     app/mt40bus/LBUS.cpp
     app/mt40bus/robotcmdexec.cpp
     app/mt40bus/powermanager.cpp
