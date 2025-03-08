@@ -346,6 +346,7 @@ void mt40busCtrl::execPacket()
                 // Wireless Config Wireless Type
             } else if (compareStr(cmdBytes, cmdLength, (char*)"WCFG", 4)) {
                 // Wireless Config Request
+                execCmdWCFG(argTable, argIndex);
             }
             break;
     }
