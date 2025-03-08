@@ -93,7 +93,10 @@ void mt40busCtrl::execCmdRSP(uint32_t *args, uint8_t argCount)
     }
 
     spdLimit = (uint8_t)(args[1]);
-    if (spdLimit > 100) spdLimit = 100;
+    if (spdLimit > 100) {
+        // 不正値対策で何もしない
+        return;
+    }
 
     trainCtrlObj.train->setRobotMaxSpd(spdLimit);
 }
@@ -102,7 +105,6 @@ void mt40busCtrl::execCmdRSP(uint32_t *args, uint8_t argCount)
 void mt40busCtrl::execCmdRSPS(uint32_t *args, uint8_t argCount)
 {
     uint16_t addr;
-    uint8_t spdLimit;
     trainctrl::trainctrlresp trainCtrlObj;
 
     addr = decodeLocoAddr(args[0]);
@@ -117,7 +119,7 @@ void mt40busCtrl::execCmdRSPS(uint32_t *args, uint8_t argCount)
         // Speed Limit Request
         uint32_t respArgs[2];
         respArgs[0] = args[0];
-        respArgs[1] = spdLimit;
+        respArgs[1] = trainCtrlObj.train->getRobotMaxSpd();
         sendCmd('RSPS', respArgs, 2);
     }
 }

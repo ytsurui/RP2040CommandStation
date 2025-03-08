@@ -720,6 +720,11 @@ bool trainInfo::setRobotDirection(uint8_t dir)
 {
     if (dir >= 2) return false;
 
+    if (robotDir == dir) {
+        lastCtrlCounter = 0;
+        return true;
+    }
+
     robotDir = dir;
     lastCtrlCounter = 0;
     refreshTrainSpdDir();
@@ -730,6 +735,10 @@ bool trainInfo::setRobotMaxSpd(uint8_t spd)
 {
     if (spd > 100) return false;
 
+    if (robotSpd == spd) {
+        lastCtrlCounter = 0;
+        return true;
+    }
     robotSpd = spd;
     lastCtrlCounter = 0;
     refreshTrainSpdDir();
