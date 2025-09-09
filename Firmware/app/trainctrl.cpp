@@ -394,7 +394,7 @@ void trainInfo::funcSendStub(trainDataInfo *fg, uint16_t appendWaitCount, uint16
 {
     if (fg->enable) {
         if (appendWaitCount > 0) {
-            fg->sendcount = appendWaitCount;
+            fg->sendcount += appendWaitCount;
         }
         fg->sendcount++;
         if (fg->sendcount > PACKET_SEND_INTERVAL) {
