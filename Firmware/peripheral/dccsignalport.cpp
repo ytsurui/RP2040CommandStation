@@ -14,6 +14,8 @@ bool dccport::progMode = false;
 
 uint16_t dccport::powerInCount;
 
+#define DCC_PREAMBLE_LENGTH 14
+
 void dccport::init(void)
 {
     gpio_init(DCC_SIGNAL_PORT_1);
@@ -113,8 +115,7 @@ void dccport::dcc_send_preamble(void)
         }
     }
 
-    for (i = 0; i < 17; i++)
-    // for (i = 0; i < 12; i++)
+    for (i = 0; i < DCC_PREAMBLE_LENGTH; i++)
     {
         dcc_send_pulse(1);
     }

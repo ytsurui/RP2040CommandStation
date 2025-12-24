@@ -1,5 +1,5 @@
 
-#define PACKETBUFFER_SIZE 10
+#define PACKETBUFFER_SIZE 64
 #define PACKET_MAX_SIZE 20
 
 class dccsignal
