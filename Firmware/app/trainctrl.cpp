@@ -19,7 +19,7 @@ void trainctrl::init(void)
 
     for (i = 0; i < TRAIN_CTRL_MAX; i++)
     {
-        trainCtrlData->init();
+        trainCtrlData[i].init();
     }
 }
 
@@ -453,7 +453,7 @@ bool trainInfo::setSpeed14(uint8_t dir, uint8_t spd)
 
     
     if (robotSpd < 100) {
-        if (robotSpd = 0) {
+        if (robotSpd == 0) {
             spd = 0;
         } else {
             spd = spd * robotSpd / 100;
@@ -489,7 +489,7 @@ bool trainInfo::setSpeed28(uint8_t dir, uint8_t spd)
 
     
     if (robotSpd < 100) {
-        if (robotSpd = 0) {
+        if (robotSpd == 0) {
             spd = 0;
         } else {
             spd = spd * robotSpd / 100;
