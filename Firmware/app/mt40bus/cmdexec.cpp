@@ -117,6 +117,24 @@ void mt40busCtrl::execCmdDI(uint32_t *args, uint8_t argCount)
         // Forward
         trainCtrlObj.train->setDirFlag(1);
     }
+
+    uint8_t spd, step;
+    if (trainCtrlObj.train->getSpeedType(&spd, &step)) {
+        switch (step) {
+            case 0:
+                // speed-step 14
+                trainCtrlObj.train->setSpeed14(trainCtrlObj.train->getDirFlag(), spd);
+                break;
+            case 1:
+                // speed-step 28
+                trainCtrlObj.train->setSpeed28(trainCtrlObj.train->getDirFlag(), spd);
+                break;
+            case 2:
+                // speed-step 128
+                trainCtrlObj.train->setSpeed128(trainCtrlObj.train->getDirFlag(), spd);
+                break;
+        }
+    }
 }
 
 // Train Direction Status
