@@ -437,10 +437,10 @@ void mt40busCtrl::execCmdTO(uint32_t *args, uint8_t argCount)
 
     if (args[1] == 1) {
         // Closed
-        accessoryCtrl::sendAccessoryPacket(addr, false);
+        accessoryCtrl::sendAccessoryPacket(addr, true);
     } else if (args[1] == 0) {
         // Thrown
-        accessoryCtrl::sendAccessoryPacket(addr, true);
+        accessoryCtrl::sendAccessoryPacket(addr, false);
     }
 }
 
@@ -460,10 +460,10 @@ void mt40busCtrl::execCmdTOS(uint32_t *args, uint8_t argCount)
         respArgs[0] = args[0];
         if (accessoryCtrl::getAccessoryStat(addr)) {
             // Closed
-            respArgs[1] = 0;
+            respArgs[1] = 1;
         } else {
             // Thrown
-            respArgs[1] = 1;
+            respArgs[1] = 0;
         }
 
         sendCmd('TOS', respArgs, 2);
