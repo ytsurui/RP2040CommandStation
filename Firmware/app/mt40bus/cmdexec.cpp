@@ -380,7 +380,7 @@ void mt40busCtrl::execCmdSP(uint32_t *args, uint8_t argCount)
     uint8_t spd;
     trainctrl::trainctrlresp trainCtrlObj;
 
-    if (argCount != 3) return;
+    if (argCount < 2 && argCount > 3) return;
 
     addr = decodeLocoAddr(args[0]);
     if (addr == 0xFFFF) return;
@@ -390,21 +390,33 @@ void mt40busCtrl::execCmdSP(uint32_t *args, uint8_t argCount)
         return;
     }
 
-    spd = (uint8_t)((args[1] & 0x000003FC) >> 3);
-
-    switch (args[2]) {
-        case 0:
-            // speed-step 14
-            trainCtrlObj.train->setSpeed14(trainCtrlObj.train->getDirFlag(), spd);
-            break;
-        case 1:
-            // speed-step 28
-            trainCtrlObj.train->setSpeed28(trainCtrlObj.train->getDirFlag(), spd);
-            break;
-        case 2:
-            // speed-step 128
-            trainCtrlObj.train->setSpeed128(trainCtrlObj.train->getDirFlag(), spd);
-            break;
+    if (argCount == 2) {
+        // speed-step 128
+        spd = (uint8_t)((args[1] & 0x000003FC) >> 3);
+        trainCtrlObj.train->setSpeed128(trainCtrlObj.train->getDirFlag(), spd);        
+    } else {
+        switch (args[2]) {
+            case DCC_SPEEDSTEP_14:
+                if (args[1] == 0) {
+                    spd = 0;
+                } else {
+                    spd = (uint8_t)((((args[1] & 0x0000003FC) >> 2) * 14) >> 8) + 2;
+                }
+                trainCtrlObj.train->setSpeed14(trainCtrlObj.train->getDirFlag(), spd);
+                break;
+            case DCC_SPEEDSTEP_28:
+                if (args[1] == 0) {
+                    spd = 0;
+                } else {
+                    spd = (uint8_t)((((args[1] & 0x0000003FC) >> 2) * 28) >> 8) + 4;
+                }
+                trainCtrlObj.train->setSpeed28(trainCtrlObj.train->getDirFlag(), spd);
+                break;
+            case DCC_SPEEDSTEP_128:
+                spd = (uint8_t)((args[1] & 0x000003FC) >> 3);
+                trainCtrlObj.train->setSpeed128(trainCtrlObj.train->getDirFlag(), spd);
+                break;
+        }
     }
 }
 

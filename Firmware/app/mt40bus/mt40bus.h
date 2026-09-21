@@ -10,6 +10,10 @@
 #define ENABLE_LBUS
 //#define SET_LBUS_LOCAL_COMMAND
 
+#define DCC_SPEEDSTEP_14 1
+#define DCC_SPEEDSTEP_28 0
+#define DCC_SPEEDSTEP_128 2
+
 class mt40busCtrl
 {
     public:
