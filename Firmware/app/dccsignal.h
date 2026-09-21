@@ -1,5 +1,5 @@
 
-#define PACKETBUFFER_SIZE 64
+#define PACKETBUFFER_SIZE 16
 #define PACKET_MAX_SIZE 20
 
 class dccsignal
@@ -10,6 +10,8 @@ public:
 
     static void execPacket(void);
     static bool putPacket(uint8_t *packet, uint8_t length, uint8_t cycle, uint16_t targetAddr, uint16_t targetType);
+    // Coalesce only vehicle state packets; accessories retain FIFO semantics.
+    static bool putTrainPacket(uint8_t *packet, uint8_t length, uint8_t cycle, uint16_t targetAddr, uint16_t targetType);
     static void calcChecksumPacket(uint8_t *packet, uint8_t length);
 
     static uint8_t getWaitPacketCount(void);
@@ -26,6 +28,7 @@ private:
         uint16_t targetAddr;
         uint16_t targetType;
         bool sendWaitFlag;
+        bool replaceable;
     } dccPacketBuffer;
 
     typedef struct
@@ -42,13 +45,12 @@ private:
     static uint8_t dccPBufOutPos;
     static uint8_t dccPBufCount;
 
-    static bool bufferMutexFlag;
-    static bool bufferCounterMutexFlag;
     static bool cutoutFlagMutexFlag;
 
     static bool enableBiDiCutout;
 
     static packetStruct *getPacketBuffer(void);
+    static bool putPacketImpl(uint8_t *packet, uint8_t length, uint8_t cycle, uint16_t targetAddr, uint16_t targetType, bool replaceable);
 };
 
 /*

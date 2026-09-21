@@ -10,6 +10,7 @@ class trainInfo
 public:
     void init(void);
     uint16_t task(uint16_t appendWaitCount);
+    bool retryPendingOperations(void);
 
     uint16_t getAddr(void);
     bool setAddr(uint16_t newAddr);
@@ -61,6 +62,7 @@ private:
     typedef struct
     {
         bool enable;
+        bool pending;
         uint8_t data1;
         uint8_t data2;
         uint16_t sendcount;
@@ -89,7 +91,12 @@ private:
     uint8_t directionFlag;
 
     trainCtrlInfo trainData;
+    bool operationPending;
+    bool sendItem(trainDataInfo *item, uint8_t kind);
+    void sendOperation(trainDataInfo *item, uint8_t kind);
     void taskStub(trainDataInfo targetData);
+
+    void clearTrainData(trainDataInfo *td);
 
     void funcSendStub(trainDataInfo *fg, uint16_t appendWaitCount, uint16_t *smallSendCount, uint8_t funcGroup);
 
@@ -115,8 +122,10 @@ public:
     static void releaseTrain(uint16_t addr);
 
 private:
+    friend class trainInfo;
     static bool enableTask;
     static uint16_t eventCounter;
+    static uint16_t priorityEventCounter;
 
     static uint16_t smallLastCtrlCountValue;
     static uint16_t appendLastCtrlCountValue;

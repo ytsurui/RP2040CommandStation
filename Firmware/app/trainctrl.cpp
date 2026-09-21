@@ -3,11 +3,15 @@
 #include "trainpacket.h"
 #include "dccsignal.h"
 
-#include "../throttle/peripheral/lcd.h"
-
 #include <stdio.h>
 
 namespace {
+uint16_t advanceSendCount(uint16_t count, uint16_t append)
+{
+    const uint32_t next = uint32_t(count) + append + 1;
+    return next > PACKET_SEND_INTERVAL ? PACKET_SEND_INTERVAL + 1 : next;
+}
+
 // task() increments once before testing > PACKET_SEND_INTERVAL.
 uint16_t remainingSendCount(uint16_t sendcount)
 {
@@ -20,12 +24,17 @@ uint16_t remainingSendCount(uint16_t sendcount)
 trainInfo trainctrl::trainCtrlData[TRAIN_CTRL_MAX];
 bool trainctrl::enableTask;
 uint16_t trainctrl::eventCounter;
+uint16_t trainctrl::priorityEventCounter;
 uint16_t trainctrl::smallLastCtrlCountValue; // 再度送信するまでの間隔のうち、最も小さいものを入れておく (パケットバッファが空になった際にすべての待機状態データにこの数値を足す)
 uint16_t trainctrl::appendLastCtrlCountValue;
 
 void trainctrl::init(void)
 {
     uint16_t i;
+    enableTask = false;
+    eventCounter = priorityEventCounter = 0;
+    smallLastCtrlCountValue = 0xFFFF;
+    appendLastCtrlCountValue = 0;
 
     for (i = 0; i < TRAIN_CTRL_MAX; i++)
     {
@@ -39,6 +48,7 @@ void trainctrl::eventMS(void)
     {
         enableTask = true;
         eventCounter = 0;
+        priorityEventCounter = 0;
 
         // gpio_put(0, true);
         // gpio_put(0, false);
@@ -64,6 +74,14 @@ void trainctrl::task(void)
     if (!enableTask)
     {
         return;
+    }
+
+    // Failed operation enqueues get the next free capacity before periodic traffic.
+    while (priorityEventCounter < TRAIN_CTRL_MAX) {
+        if (!trainCtrlData[priorityEventCounter].retryPendingOperations()) {
+            return;
+        }
+        ++priorityEventCounter;
     }
 
     if (eventCounter >= TRAIN_CTRL_MAX)
@@ -200,24 +218,39 @@ void trainInfo::init(void)
 {
     // printf("trainInfo init: lastAddr=%d\n", addr);
     addr = 0;
+    operationPending = false;
     lastCtrlCounter = 0;
-    directionFlag = 1;  // FOR
-    trainData.speed14.enable = false;
-    trainData.speed28.enable = false;
-    trainData.speed128.enable = false;
-    trainData.FuncGroup1.enable = false;
-    trainData.FuncGroup2.enable = false;
-    trainData.FuncGroup3.enable = false;
-    trainData.FuncGroup4.enable = false;
-    trainData.FuncGroup5.enable = false;
-    trainData.FuncGroup6.enable = false;
-    trainData.FuncGroup7.enable = false;
-    trainData.FuncGroup8.enable = false;
-    trainData.FuncGroup9.enable = false;
-    trainData.FuncGroup10.enable = false;
+    directionFlag = TRAIN_SPD_DIR_FOR;  // FOR
+
+    origDir = TRAIN_SPD_DIR_FOR;
+    origSpd = 0;
+
+    // スロット再利用時に前の車両のデータが残らないよう、送信データも完全にクリアする
+    clearTrainData(&trainData.speed14);
+    clearTrainData(&trainData.speed28);
+    clearTrainData(&trainData.speed128);
+    clearTrainData(&trainData.FuncGroup1);
+    clearTrainData(&trainData.FuncGroup2);
+    clearTrainData(&trainData.FuncGroup3);
+    clearTrainData(&trainData.FuncGroup4);
+    clearTrainData(&trainData.FuncGroup5);
+    clearTrainData(&trainData.FuncGroup6);
+    clearTrainData(&trainData.FuncGroup7);
+    clearTrainData(&trainData.FuncGroup8);
+    clearTrainData(&trainData.FuncGroup9);
+    clearTrainData(&trainData.FuncGroup10);
 
     robotDir = 0;   // NONE (1: toggle)
     robotSpd = 100;
+}
+
+void trainInfo::clearTrainData(trainDataInfo *td)
+{
+    td->enable = false;
+    td->pending = false;
+    td->data1 = 0;
+    td->data2 = 0;
+    td->sendcount = 0;
 }
 
 uint16_t trainInfo::task(uint16_t appendWaitCount)
@@ -243,11 +276,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
 
     if (trainData.speed14.enable)
     {
-        if (appendWaitCount > 0)
-        {
-            trainData.speed14.sendcount += appendWaitCount;
-        }
-        trainData.speed14.sendcount++;
+        trainData.speed14.sendcount = advanceSendCount(trainData.speed14.sendcount, appendWaitCount);
 
         if (trainData.speed14.sendcount > PACKET_SEND_INTERVAL)
         {
@@ -260,11 +289,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
     }
     else if (trainData.speed28.enable)
     {
-        if (appendWaitCount > 0)
-        {
-            trainData.speed28.sendcount += appendWaitCount;
-        }
-        trainData.speed28.sendcount++;
+        trainData.speed28.sendcount = advanceSendCount(trainData.speed28.sendcount, appendWaitCount);
         if (trainData.speed28.sendcount > PACKET_SEND_INTERVAL)
         {
             if (trainpacket::sendSpeed28Packet(addr, trainData.speed28.data1, trainData.speed28.data2))
@@ -277,12 +302,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
     else if (trainData.speed128.enable)
     {
         // gpio_put(0, true);
-        if (appendWaitCount > 0)
-        {
-            // gpio_put(0, true);
-            trainData.speed128.sendcount += appendWaitCount;
-        }
-        trainData.speed128.sendcount++;
+        trainData.speed128.sendcount = advanceSendCount(trainData.speed128.sendcount, appendWaitCount);
         if (trainData.speed128.sendcount > PACKET_SEND_INTERVAL)
         {
             if (trainpacket::sendSpeed128Packet(addr, trainData.speed128.data1, trainData.speed128.data2))
@@ -297,11 +317,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
 
     if (trainData.FuncGroup1.enable)
     {
-        if (appendWaitCount > 0)
-        {
-            trainData.FuncGroup1.sendcount += appendWaitCount;
-        }
-        trainData.FuncGroup1.sendcount++;
+        trainData.FuncGroup1.sendcount = advanceSendCount(trainData.FuncGroup1.sendcount, appendWaitCount);
         if (trainData.FuncGroup1.sendcount > PACKET_SEND_INTERVAL)
         {
             if (trainpacket::sendFuncGroupPacket(addr, TRAIN_FUNC_BASIC_F0_F4, trainData.FuncGroup1.data1))
@@ -319,11 +335,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
 
     if (trainData.FuncGroup2.enable)
     {
-        if (appendWaitCount > 0)
-        {
-            trainData.FuncGroup2.sendcount += appendWaitCount;
-        }
-        trainData.FuncGroup2.sendcount++;
+        trainData.FuncGroup2.sendcount = advanceSendCount(trainData.FuncGroup2.sendcount, appendWaitCount);
         if (trainData.FuncGroup2.sendcount > PACKET_SEND_INTERVAL)
         {
             if (trainpacket::sendFuncGroupPacket(addr, TRAIN_FUNC_BASIC_F5_F8, trainData.FuncGroup2.data1))
@@ -341,11 +353,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
 
     if (trainData.FuncGroup3.enable)
     {
-        if (appendWaitCount > 0)
-        {
-            trainData.FuncGroup3.sendcount += appendWaitCount;
-        }
-        trainData.FuncGroup3.sendcount++;
+        trainData.FuncGroup3.sendcount = advanceSendCount(trainData.FuncGroup3.sendcount, appendWaitCount);
         if (trainData.FuncGroup3.sendcount > PACKET_SEND_INTERVAL)
         {
             if (trainpacket::sendFuncGroupPacket(addr, TRAIN_FUNC_BASIC_F9_F12, trainData.FuncGroup3.data1))
@@ -360,49 +368,6 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
             smallSendCount = remaining;
         }
     }
-    /*
-    if (trainData.FuncGroup4.enable)
-    {
-        if (appendWaitCount > 0)
-        {
-            trainData.FuncGroup4.sendcount += appendWaitCount;
-        }
-        trainData.FuncGroup4.sendcount++;
-        if (trainData.FuncGroup4.sendcount > PACKET_SEND_INTERVAL)
-        {
-            if (trainpacket::sendExternalFuncPacket(addr, TRAIN_FUNC_EXTERNAL_F13_F20, trainData.FuncGroup4.data1))
-            {
-                trainData.FuncGroup4.sendcount = 0;
-            }
-        }
-
-        if (smallSendCount > trainData.FuncGroup4.sendcount)
-        {
-            smallSendCount = trainData.FuncGroup4.sendcount;
-        }
-    }
-
-    if (trainData.FuncGroup5.enable)
-    {
-        if (appendWaitCount > 0)
-        {
-            trainData.FuncGroup5.sendcount += appendWaitCount;
-        }
-        trainData.FuncGroup5.sendcount++;
-        if (trainData.FuncGroup5.sendcount > PACKET_SEND_INTERVAL)
-        {
-            if (trainpacket::sendExternalFuncPacket(addr, TRAIN_FUNC_EXTERNAL_F20_F28, trainData.FuncGroup5.data1))
-            {
-                trainData.FuncGroup5.sendcount = 0;
-            }
-        }
-
-        if (smallSendCount > trainData.FuncGroup5.sendcount)
-        {
-            smallSendCount = trainData.FuncGroup5.sendcount;
-        }
-    }
-    */
 
     funcSendStub(&trainData.FuncGroup4, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F13_F20);
     funcSendStub(&trainData.FuncGroup5, appendWaitCount, &smallSendCount, TRAIN_FUNC_EXTERNAL_F20_F28);
@@ -418,10 +383,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
 void trainInfo::funcSendStub(trainDataInfo *fg, uint16_t appendWaitCount, uint16_t *smallSendCount, uint8_t funcGroup)
 {
     if (fg->enable) {
-        if (appendWaitCount > 0) {
-            fg->sendcount += appendWaitCount;
-        }
-        fg->sendcount++;
+        fg->sendcount = advanceSendCount(fg->sendcount, appendWaitCount);
         if (fg->sendcount > PACKET_SEND_INTERVAL) {
             if (trainpacket::sendExternalFuncPacket(addr, funcGroup, fg->data1)) {
                 fg->sendcount = 0;
@@ -435,6 +397,51 @@ void trainInfo::funcSendStub(trainDataInfo *fg, uint16_t appendWaitCount, uint16
     }
 }
 
+bool trainInfo::sendItem(trainDataInfo *item, uint8_t kind)
+{
+    switch (kind) {
+    case 0: return trainpacket::sendSpeed14Packet(addr, item->data1, item->data2);
+    case 1: return trainpacket::sendSpeed28Packet(addr, item->data1, item->data2);
+    case 2: return trainpacket::sendSpeed128Packet(addr, item->data1, item->data2);
+    default:
+        if (kind <= 5) return trainpacket::sendFuncGroupPacket(addr, kind - 2, item->data1);
+        return trainpacket::sendExternalFuncPacket(addr, kind - 5, item->data1);
+    }
+}
+
+void trainInfo::sendOperation(trainDataInfo *item, uint8_t kind)
+{
+    if (addr == 0) return;
+    item->pending = !sendItem(item, kind);
+    item->sendcount = item->pending ? PACKET_SEND_INTERVAL : 0;
+    if (item->pending) {
+        operationPending = true;
+        // A command may arrive after this sweep's priority pass has finished.
+        trainctrl::priorityEventCounter = 0;
+    }
+}
+
+bool trainInfo::retryPendingOperations(void)
+{
+    if (!operationPending || addr == 0) return true;
+    trainDataInfo *items[] = {
+        &trainData.speed14, &trainData.speed28, &trainData.speed128,
+        &trainData.FuncGroup1, &trainData.FuncGroup2, &trainData.FuncGroup3,
+        &trainData.FuncGroup4, &trainData.FuncGroup5, &trainData.FuncGroup6,
+        &trainData.FuncGroup7, &trainData.FuncGroup8, &trainData.FuncGroup9,
+        &trainData.FuncGroup10
+    };
+    for (uint8_t kind = 0; kind < 13; ++kind) {
+        trainDataInfo *item = items[kind];
+        if (!item->enable) item->pending = false;
+        if (!item->pending) continue;
+        sendOperation(item, kind);
+        if (item->pending) return false;
+    }
+    operationPending = false;
+    return true;
+}
+
 uint16_t trainInfo::getAddr(void)
 {
     return (addr);
@@ -446,11 +453,12 @@ bool trainInfo::setAddr(uint16_t newAddr)
     {
         return false;
     }
+
+    // 空きスロットの残留データを確実にクリアしてから割り当てる
+    init();
+
     addr = newAddr;
     lastCtrlCounter = 0;
-    
-    robotDir = 0;   // NONE (1: toggle)
-    robotSpd = 100;
 
     return true;
 }
@@ -465,8 +473,10 @@ void trainInfo::clearAddr(void)
 
 bool trainInfo::setSpeed14(uint8_t dir, uint8_t spd)
 {
+    if (dir != TRAIN_SPD_DIR_FOR && dir != TRAIN_SPD_DIR_REV) return false;
     origDir = dir;
     origSpd = spd;
+    directionFlag = dir;    // ロボット反転前の指示方向を保持
 
     if (robotDir == 1) {
         // Robot Direction Control
@@ -495,14 +505,17 @@ bool trainInfo::setSpeed14(uint8_t dir, uint8_t spd)
     trainData.speed14.data1 = dir;
     trainData.speed14.data2 = spd;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.speed14, 0);
 
     return true;
 }
 
 bool trainInfo::setSpeed28(uint8_t dir, uint8_t spd)
 {
+    if (dir != TRAIN_SPD_DIR_FOR && dir != TRAIN_SPD_DIR_REV) return false;
     origDir = dir;
     origSpd = spd;
+    directionFlag = dir;    // ロボット反転前の指示方向を保持
 
     if (robotDir == 1) {
         // Robot Direction Control
@@ -530,14 +543,18 @@ bool trainInfo::setSpeed28(uint8_t dir, uint8_t spd)
     trainData.speed28.data1 = dir;
     trainData.speed28.data2 = spd;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.speed28, 1);
 
     return true;
 }
 
 bool trainInfo::setSpeed128(uint8_t dir, uint8_t spd)
 {
+    if (dir != TRAIN_SPD_DIR_FOR && dir != TRAIN_SPD_DIR_REV) return false;
+    if (spd > 127) return false;
     origDir = dir;
     origSpd = spd;
+    directionFlag = dir;    // ロボット反転前の指示方向を保持
 
     if (robotDir == 1) {
         // Robot Direction Control
@@ -566,6 +583,7 @@ bool trainInfo::setSpeed128(uint8_t dir, uint8_t spd)
     trainData.speed128.data1 = dir;
     trainData.speed128.data2 = spd;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.speed128, 2);
 
     // trainpacket::sendSpeed128Packet(addr, trainData.speed128.data1, trainData.speed128.data2);
     // gpio_put(0, true);
@@ -597,6 +615,7 @@ bool trainInfo::setFuncG1(uint8_t data)
     trainData.FuncGroup1.enable = true;
     trainData.FuncGroup1.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup1, 3);
 
     return true;
 }
@@ -606,6 +625,7 @@ bool trainInfo::setFuncG2(uint8_t data)
     trainData.FuncGroup2.enable = true;
     trainData.FuncGroup2.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup2, 4);
 
     return true;
 }
@@ -615,6 +635,7 @@ bool trainInfo::setFuncG3(uint8_t data)
     trainData.FuncGroup3.enable = true;
     trainData.FuncGroup3.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup3, 5);
 
     return true;
 }
@@ -624,6 +645,7 @@ bool trainInfo::setFuncG4(uint8_t data)
     trainData.FuncGroup4.enable = true;
     trainData.FuncGroup4.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup4, 6);
 
     return true;
 }
@@ -633,6 +655,7 @@ bool trainInfo::setFuncG5(uint8_t data)
     trainData.FuncGroup5.enable = true;
     trainData.FuncGroup5.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup5, 7);
 
     return true;
 }
@@ -642,6 +665,7 @@ bool trainInfo::setFuncG6(uint8_t data)
     trainData.FuncGroup6.enable = true;
     trainData.FuncGroup6.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup6, 8);
 
     return true;
 }
@@ -651,6 +675,7 @@ bool trainInfo::setFuncG7(uint8_t data)
     trainData.FuncGroup7.enable = true;
     trainData.FuncGroup7.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup7, 9);
 
     return true;
 }
@@ -660,6 +685,7 @@ bool trainInfo::setFuncG8(uint8_t data)
     trainData.FuncGroup8.enable = true;
     trainData.FuncGroup8.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup8, 10);
 
     return true;
 }
@@ -669,6 +695,7 @@ bool trainInfo::setFuncG9(uint8_t data)
     trainData.FuncGroup9.enable = true;
     trainData.FuncGroup9.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup9, 11);
 
     return true;
 }
@@ -678,6 +705,7 @@ bool trainInfo::setFuncG10(uint8_t data)
     trainData.FuncGroup10.enable = true;
     trainData.FuncGroup10.data1 = data;
     lastCtrlCounter = 0;
+    sendOperation(&trainData.FuncGroup10, 12);
 
     return true;
 }

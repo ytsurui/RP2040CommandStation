@@ -5,6 +5,16 @@
 #include "../peripheral/dccsignalport.h"
 
 #include <stdio.h>
+#include "pico/mutex.h"
+
+namespace {
+auto_init_mutex(packetBufferMutex);
+class PacketBufferLock {
+public:
+    PacketBufferLock() { mutex_enter_blocking(&packetBufferMutex); }
+    ~PacketBufferLock() { mutex_exit(&packetBufferMutex); }
+};
+}
 
 #define CUTOUT_TIMMING_COUNT_MAX 10
 #define CUTOUT_TIMMING_COUNT_LONG_MAX 10
@@ -20,9 +30,7 @@ uint8_t dccsignal::dccPBufCount = 0;
 
 bool dccsignal::enableBiDiCutout = true;
 
-bool dccsignal::bufferMutexFlag = false;
 bool dccsignal::cutoutFlagMutexFlag = false;
-bool dccsignal::bufferCounterMutexFlag = false;
 
 dccsignal::packetStruct dccsignal::sendCache;
 
@@ -77,79 +85,26 @@ bool dccsignal::checkRunRailcomCutout(void)
 // パケットバッファをスキャンし、送信待ちになっているパケット数をカウントする
 uint8_t dccsignal::getWaitPacketCount(void)
 {
-    uint8_t i, count;
-
-    count = 0;
-    for (i = 0; i < PACKETBUFFER_SIZE; i++)
-    {
-        if (packetBuf[i].sendWaitFlag)
-        {
-            count++;
-        }
-    }
-    return (count);
+    PacketBufferLock lock;
+    return dccPBufCount;
 }
 
-// パケットバッファをスキャンし、出力するパケットデータのアドレスを返す
-// packetStruct *getPacketBuffer(void)
+// One consumer (core 1) copies a packet while holding the same lock as core 0.
 dccsignal::packetStruct *dccsignal::getPacketBuffer(void)
 {
-    uint8_t i, i2;
-    uint8_t pIndex;
-
-    for (i = 0; i < PACKETBUFFER_SIZE; i++)
-    {
-        pIndex = i + dccPBufOutPos;
-        if (pIndex >= PACKETBUFFER_SIZE)
-        {
-            pIndex -= PACKETBUFFER_SIZE;
+    PacketBufferLock lock;
+    if (dccPBufCount != 0) {
+        dccPacketBuffer &entry = packetBuf[dccPBufOutPos];
+        for (uint8_t i = 0; i < entry.length; ++i) {
+            sendCache.packet[i] = entry.packet[i];
         }
-
-        if (pIndex >= PACKETBUFFER_SIZE)
-        {
-            continue;
-        }
-
-        if (packetBuf[pIndex].sendWaitFlag)
-        {
-            for (i2 = 0; i2 < packetBuf[pIndex].length; i2++)
-            {
-                sendCache.packet[i2] = packetBuf[pIndex].packet[i2];
-            }
-
-            sendCache.length = packetBuf[pIndex].length;
-            sendCache.retryCount = packetBuf[pIndex].retryCount;
-            packetBuf[pIndex].sendWaitFlag = false;
-
-            while (bufferCounterMutexFlag)
-                ;
-            bufferCounterMutexFlag = true;
-            dccPBufOutPos++;
-            if (dccPBufCount > 0)
-            {
-                dccPBufCount--;
-            }
-
-            if (dccPBufOutPos >= PACKETBUFFER_SIZE)
-            {
-                dccPBufOutPos = 0;
-            }
-            bufferCounterMutexFlag = false;
-
-            // printf("send packet cache index: %d, count=%d\n", pIndex, dccPBufCount);
-            return &sendCache;
-        }
+        sendCache.length = entry.length;
+        sendCache.retryCount = entry.retryCount;
+        entry.sendWaitFlag = false;
+        dccPBufOutPos = (dccPBufOutPos + 1) % PACKETBUFFER_SIZE;
+        --dccPBufCount;
+        return &sendCache;
     }
-
-    if (dccPBufCount > 0)
-    {
-        // printf("error-correct: dccPBufCount Invalid, value=%d, set zero\n", dccPBufCount);
-        dccPBufCount = 0;
-    }
-
-    // printf("send idle packet\n");
-
-    // 送信キャッシュが空の場合はアイドルパケットを送信する
     sendCache.packet[0] = 0xFF;
     sendCache.packet[1] = 0x00;
     sendCache.packet[2] = 0xFF;
@@ -158,90 +113,54 @@ dccsignal::packetStruct *dccsignal::getPacketBuffer(void)
     return &sendCache;
 }
 
-// void execDCCpacket(void)
 void dccsignal::execPacket(void)
 {
-    packetStruct *sendData;
-    packetStruct cpBuf;
-    uint8_t i;
-
-    sendData = getPacketBuffer();
-
-    while (bufferMutexFlag)
-        ;
-    bufferMutexFlag = true;
-    for (i = 0; i < sendData->length; i++)
-    {
-        cpBuf.packet[i] = sendData->packet[i];
-    }
-    cpBuf.length = sendData->length;
-    cpBuf.retryCount = sendData->retryCount;
-    bufferMutexFlag = false;
-
-    // dccport::dcc_send_packet(sendData->packet, sendData->length, sendData->retryCount);
-    for (i = 0; i < cpBuf.retryCount; i++)
-    {
-        dccport::dcc_send_packet(cpBuf.packet, cpBuf.length, 1);
-        if (dccsignal::checkRunRailcomCutout())
-        {
-            dccport::dcc_railcom_cutout();
-        }
+    // Release the buffer lock before the relatively slow physical transmission.
+    packetStruct packet = *getPacketBuffer();
+    for (uint8_t i = 0; i < packet.retryCount; ++i) {
+        dccport::dcc_send_packet(packet.packet, packet.length, 1);
+        if (dccsignal::checkRunRailcomCutout()) dccport::dcc_railcom_cutout();
     }
 }
 
-// bool putPacket(uint8_t *packet, uint8_t length, uint8_t cycle, uint16_t targetAddr, uint16_t targetType)
 bool dccsignal::putPacket(uint8_t *packet, uint8_t length, uint8_t cycle, uint16_t targetAddr, uint16_t targetType)
 {
-    uint8_t i, pIndex;
+    return putPacketImpl(packet, length, cycle, targetAddr, targetType, false);
+}
 
-    if (dccPBufCount >= (PACKETBUFFER_SIZE - 3))
-    {
-        // printf("putPacket error: buffer overflow, bufCount=%d, bufPos=%d\n", dccPBufCount, dccPBufInPos);
-        return false;
+bool dccsignal::putTrainPacket(uint8_t *packet, uint8_t length, uint8_t cycle, uint16_t targetAddr, uint16_t targetType)
+{
+    return putPacketImpl(packet, length, cycle, targetAddr, targetType, true);
+}
+
+bool dccsignal::putPacketImpl(uint8_t *packet, uint8_t length, uint8_t cycle, uint16_t targetAddr, uint16_t targetType, bool replaceable)
+{
+    if (length == 0 || length > PACKET_MAX_SIZE) return false;
+    PacketBufferLock lock;
+    // Replace in place even when full. All speed formats share targetType 0.
+    if (replaceable) {
+        for (uint8_t i = 0; i < PACKETBUFFER_SIZE; ++i) {
+            dccPacketBuffer &entry = packetBuf[i];
+            if (entry.sendWaitFlag && entry.replaceable &&
+                entry.targetAddr == targetAddr && entry.targetType == targetType) {
+                for (uint8_t j = 0; j < length; ++j) entry.packet[j] = packet[j];
+                entry.length = length;
+                entry.retryCount = cycle;
+                return true;
+            }
+        }
     }
-
-    while (bufferCounterMutexFlag)
-        ;
-    if (dccPBufInPos >= PACKETBUFFER_SIZE)
-    {
-        bufferCounterMutexFlag = true;
-        dccPBufInPos = 0;
-        bufferCounterMutexFlag = false;
-    }
-
-    while (bufferMutexFlag)
-        ;
-
-    bufferMutexFlag = true;
-
-    if (packetBuf[dccPBufInPos].sendWaitFlag)
-    {
-        bufferMutexFlag = false;
-        // printf("putPacket error: buffer send wait: index=%d\n", dccPBufInPos);
-        return false;
-    }
-
-    for (i = 0; i < length; i++)
-    {
-        packetBuf[dccPBufInPos].packet[i] = packet[i];
-    }
-    packetBuf[dccPBufInPos].length = length;
-    packetBuf[dccPBufInPos].retryCount = cycle;
-    packetBuf[dccPBufInPos].sendWaitFlag = true;
-    packetBuf[dccPBufInPos].targetAddr = targetAddr;
-    packetBuf[dccPBufInPos].targetType = targetType;
-
-    while (bufferCounterMutexFlag)
-        ;
-    bufferCounterMutexFlag = true;
-    dccPBufInPos++;
-    dccPBufCount++;
-    if (dccPBufInPos >= PACKETBUFFER_SIZE)
-    {
-        dccPBufInPos = 0;
-    }
-    bufferCounterMutexFlag = false;
-    bufferMutexFlag = false;
+    if (dccPBufCount >= PACKETBUFFER_SIZE - 3) return false;
+    dccPacketBuffer &entry = packetBuf[dccPBufInPos];
+    for (uint8_t i = 0; i < length; ++i) entry.packet[i] = packet[i];
+    entry.length = length;
+    entry.retryCount = cycle;
+    entry.targetAddr = targetAddr;
+    entry.targetType = targetType;
+    entry.replaceable = replaceable;
+    entry.sendWaitFlag = true;
+    dccPBufInPos = (dccPBufInPos + 1) % PACKETBUFFER_SIZE;
+    ++dccPBufCount;
     return true;
 }
 
