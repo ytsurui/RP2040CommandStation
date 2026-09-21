@@ -7,6 +7,16 @@
 
 #include <stdio.h>
 
+namespace {
+// task() increments once before testing > PACKET_SEND_INTERVAL.
+uint16_t remainingSendCount(uint16_t sendcount)
+{
+    return sendcount >= PACKET_SEND_INTERVAL
+        ? 0
+        : PACKET_SEND_INTERVAL - sendcount;
+}
+}
+
 trainInfo trainctrl::trainCtrlData[TRAIN_CTRL_MAX];
 bool trainctrl::enableTask;
 uint16_t trainctrl::eventCounter;
@@ -33,7 +43,7 @@ void trainctrl::eventMS(void)
         // gpio_put(0, true);
         // gpio_put(0, false);
 
-        if (dccsignal::getWaitPacketCount() == 0)
+        if (dccsignal::getWaitPacketCount() == 0 && smallLastCtrlCountValue != 0xFFFF)
         {
             appendLastCtrlCountValue = smallLastCtrlCountValue;
             // appendLastCtrlCountValue = 0;
@@ -246,7 +256,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
                 trainData.speed14.sendcount = 0;
             }
         }
-        smallSendCount = trainData.speed14.sendcount;
+        smallSendCount = remainingSendCount(trainData.speed14.sendcount);
     }
     else if (trainData.speed28.enable)
     {
@@ -262,7 +272,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
                 trainData.speed28.sendcount = 0;
             }
         }
-        smallSendCount = trainData.speed28.sendcount;
+        smallSendCount = remainingSendCount(trainData.speed28.sendcount);
     }
     else if (trainData.speed128.enable)
     {
@@ -280,7 +290,7 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
                 trainData.speed128.sendcount = 0;
             }
         }
-        smallSendCount = trainData.speed128.sendcount;
+        smallSendCount = remainingSendCount(trainData.speed128.sendcount);
     }
 
     // gpio_put(0, true);
@@ -300,9 +310,10 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
             }
         }
 
-        if (smallSendCount > trainData.FuncGroup1.sendcount)
+        const uint16_t remaining = remainingSendCount(trainData.FuncGroup1.sendcount);
+        if (smallSendCount > remaining)
         {
-            smallSendCount = trainData.FuncGroup1.sendcount;
+            smallSendCount = remaining;
         }
     }
 
@@ -321,9 +332,10 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
             }
         }
 
-        if (smallSendCount > trainData.FuncGroup2.sendcount)
+        const uint16_t remaining = remainingSendCount(trainData.FuncGroup2.sendcount);
+        if (smallSendCount > remaining)
         {
-            smallSendCount = trainData.FuncGroup2.sendcount;
+            smallSendCount = remaining;
         }
     }
 
@@ -342,9 +354,10 @@ uint16_t trainInfo::task(uint16_t appendWaitCount)
             }
         }
 
-        if (smallSendCount > trainData.FuncGroup3.sendcount)
+        const uint16_t remaining = remainingSendCount(trainData.FuncGroup3.sendcount);
+        if (smallSendCount > remaining)
         {
-            smallSendCount = trainData.FuncGroup3.sendcount;
+            smallSendCount = remaining;
         }
     }
     /*
@@ -415,8 +428,9 @@ void trainInfo::funcSendStub(trainDataInfo *fg, uint16_t appendWaitCount, uint16
             }
         }
 
-        if (*smallSendCount > fg->sendcount) {
-            *smallSendCount = fg->sendcount;
+        const uint16_t remaining = remainingSendCount(fg->sendcount);
+        if (*smallSendCount > remaining) {
+            *smallSendCount = remaining;
         }
     }
 }
