@@ -62,12 +62,24 @@ void trainctrl::task(void)
         return;
     }
 
-    lastCtrlValue = trainCtrlData[eventCounter].task(appendLastCtrlCountValue);
-    if (smallLastCtrlCountValue > lastCtrlValue)
-    {
-        smallLastCtrlCountValue = lastCtrlValue;
+    while(1) {
+        lastCtrlValue = trainCtrlData[eventCounter].task(appendLastCtrlCountValue);
+        eventCounter++;
+        if (lastCtrlValue == 0xFFFF) {
+            if (eventCounter >= TRAIN_CTRL_MAX)
+            {
+                enableTask = false;
+                return;
+            }
+            continue;
+        }
+
+        if (smallLastCtrlCountValue > lastCtrlValue)
+        {
+            smallLastCtrlCountValue = lastCtrlValue;
+        }
+        break;
     }
-    eventCounter++;
 
     if (eventCounter >= TRAIN_CTRL_MAX)
     {
