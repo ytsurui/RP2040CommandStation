@@ -3,7 +3,8 @@
 #include "dccsignal.h"
 #include "trainpacket.h"
 
-#define TRAIN_PACKET_SEND_RETRY_COUNT 3
+#define TRAIN_SPD_PACKET_SEND_RETRY_COUNT 1
+#define TRAIN_FUNC_PACKET_SEND_RETRY_COUNT 1
 
 uint8_t trainpacket::addrMode = TRAIN_ADDR_MODE_US;
 
@@ -86,7 +87,7 @@ bool trainpacket::sendSpeed28Packet(uint16_t trainAddr, uint8_t direction, uint8
     pPos++;
 
     dccsignal::calcChecksumPacket(packet, pPos);
-    return dccsignal::putPacket(packet, pPos + 1, TRAIN_PACKET_SEND_RETRY_COUNT, trainAddr, 0);
+    return dccsignal::putPacket(packet, pPos + 1, TRAIN_SPD_PACKET_SEND_RETRY_COUNT, trainAddr, 0);
 }
 
 bool trainpacket::sendSpeed14Packet(uint16_t trainAddr, uint8_t direction, uint8_t speed)
@@ -125,7 +126,7 @@ bool trainpacket::sendSpeed14Packet(uint16_t trainAddr, uint8_t direction, uint8
     pPos++;
 
     dccsignal::calcChecksumPacket(packet, pPos);
-    return dccsignal::putPacket(packet, pPos + 1, TRAIN_PACKET_SEND_RETRY_COUNT, trainAddr, 0);
+    return dccsignal::putPacket(packet, pPos + 1, TRAIN_SPD_PACKET_SEND_RETRY_COUNT, trainAddr, 0);
 }
 
 bool trainpacket::sendSpeed128Packet(uint16_t trainAddr, uint8_t direction, uint8_t speed)
@@ -175,7 +176,7 @@ bool trainpacket::sendSpeed128Packet(uint16_t trainAddr, uint8_t direction, uint
     }
 
     dccsignal::calcChecksumPacket(packet, pPos);
-    return dccsignal::putPacket(packet, pPos + 1, TRAIN_PACKET_SEND_RETRY_COUNT, trainAddr, 0);
+    return dccsignal::putPacket(packet, pPos + 1, TRAIN_SPD_PACKET_SEND_RETRY_COUNT, trainAddr, 0);
 }
 
 /*
@@ -230,7 +231,7 @@ bool trainpacket::sendFuncGroupPacket(uint16_t trainAddr, uint8_t funcGroup, uin
     pPos++;
 
     dccsignal::calcChecksumPacket(packet, pPos);
-    return dccsignal::putPacket(packet, pPos + 1, TRAIN_PACKET_SEND_RETRY_COUNT, trainAddr, packetType);
+    return dccsignal::putPacket(packet, pPos + 1, TRAIN_FUNC_PACKET_SEND_RETRY_COUNT, trainAddr, packetType);
 }
 
 /*
@@ -307,7 +308,7 @@ bool trainpacket::sendExternalFuncPacket(uint16_t trainAddr, uint8_t funcGroup, 
     pPos++;
 
     dccsignal::calcChecksumPacket(packet, pPos);
-    return dccsignal::putPacket(packet, pPos + 1, TRAIN_PACKET_SEND_RETRY_COUNT, trainAddr, packetType);
+    return dccsignal::putPacket(packet, pPos + 1, TRAIN_FUNC_PACKET_SEND_RETRY_COUNT, trainAddr, packetType);
 }
 
 uint8_t trainpacket::spd1428Encode(uint8_t spd, uint8_t mode)
